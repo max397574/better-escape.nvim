@@ -57,6 +57,7 @@ EOF
 --------------------
 * Doesn't always work correctly if it's the first thing you type after enter insert mode for the first time.
 * Doesn't work if one of the keys of the mapping is mapped to something else.
+* Sometimes doesn't work if you use same characters and type them slowly e.g. using `jj` and typing a few `j` s slowly.
 
 💡Future Plans/Ideas
 ------------------
