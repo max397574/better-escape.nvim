@@ -19,12 +19,12 @@ local function start_timeout(timeout)
 end
 
 local function check_timeout()
-    if vim.g.better_escape_flag then
-      vim.api.nvim_feedkeys(t "<BS><BS><Esc>", "n", false)
-    else
-      vim.g.better_escape_flag = false
-    end
-    previuos_chars = {}
+  if vim.g.better_escape_flag then
+    vim.api.nvim_feedkeys(t "<BS><BS><Esc>", "n", false)
+  else
+    vim.g.better_escape_flag = false
+  end
+  previuos_chars = {}
 end
 
 function M.check_charaters()
@@ -58,9 +58,7 @@ local function validate_settings()
 end
 
 function M.setup(update)
-  -- settings = setmetatable(update, { __index = settings })
   settings = vim.tbl_deep_extend("force", settings, update or {})
-
   vim.cmd [[au InsertCharPre * lua require"better_escape".check_charaters()]]
   validate_settings()
 end
