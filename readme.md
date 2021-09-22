@@ -13,14 +13,14 @@ This is a lua version of
 Use your favourite package manager and call setup function.
 ```vim
 " Vimscript with vim-plug
-Plug 'max397574/footprints.nvim'
+Plug 'max397574/better-escape.nvim'
 lua require("betterEscape_nvim").init()
 ```
 
 ```lua
 -- lua with packer.nvim
 use {
-  "max397574/footprints.nvim",
+  "max397574/better-escape.nvim",
   config = function()
     require("betterEscape_nvim").init()
   end,
@@ -36,8 +36,8 @@ Just use your mapping.
 ```lua
 -- lua, default settings
 require("betterEscape_nvim").setup {
-    settings.mapping = "jk"
-    settings.timeout = "200"
+    settings.mapping = "jk" -- the mapping to escape
+    settings.timeout = 200 -- the time in which the keys must be hit in ms
 }
 ```
 
@@ -45,8 +45,8 @@ require("betterEscape_nvim").setup {
 -- Vimscript, default settings
 lua << EOF
 require("betterEscape_nvim").setup {
-    settings.mapping = "jk"
-    settings.timeout = "200"
+    settings.mapping = "jk" -- the mapping to escape
+    settings.timeout = 200 -- the time in which the keys must be hit in ms
 }
 EOF
 ```
