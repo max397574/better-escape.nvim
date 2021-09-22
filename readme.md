@@ -20,7 +20,7 @@ lua require("betterEscape_nvim").init()
 ```lua
 -- lua with packer.nvim
 use {
-  "~/betterEscape.nvim",
+  "max397574/footprints.nvim",
   config = function()
     require("betterEscape_nvim").init()
   end,
