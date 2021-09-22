@@ -2,7 +2,7 @@ local M = {}
 local previuos_chars = {}
 vim.g.better_escape_flag = false
 local settings = {
-  mapping = {"jk","kj"},
+  mapping = {"jk","kj", "jj"},
   timeout = 200,
 }
 
@@ -16,6 +16,16 @@ local function start_timeout(timeout)
   timer:start(timeout, 0, function()
     vim.g.better_escape_flag = false
   end)
+end
+
+local function get_indices(tbl, element)
+  local indices = {}
+  for idx, value in ipairs(tbl) do
+    if element == value then
+      table.insert(indices, idx)
+    end
+  end
+  return indices
 end
 
 local function check_timeout()
@@ -39,11 +49,11 @@ function M.check_charaters()
   table.insert(previuos_chars, vim.v.char)
   local prev_char = previuos_chars[#previuos_chars - 1] or ""
   if vim.tbl_contains(second_chars, vim.v.char) and vim.tbl_contains(first_chars, prev_char) then
-    local idx = vim.fn.index(second_chars ,vim.v.char)
-    print(first_chars[idx+1])
-    print(second_chars[idx+1])
-    if idx == vim.fn.index(first_chars, prev_char) then
-      check_timeout()
+    local indices = get_indices(second_chars, vim.v.char)
+    for _,idx in pairs(indices) do
+      if first_chars[idx] == prev_char then
+        check_timeout()
+      end
     end
   else
     if vim.tbl_contains(first_chars, vim.v.char) then
@@ -56,8 +66,10 @@ local function validate_settings()
   if type(settings.mapping) ~= "table" then
     print "Error(better-escape.nvim): Mapping must be a table."
   end
-  if #settings.mapping ~= 2 then
+  for _, mapping in ipairs(settings.mapping) do
+  if #mapping ~= 2 then
     print "Error(better-escape.nvim): Mapping must be 2 keys."
+  end
   end
   if type(settings.timeout) ~= "number" then
     print "Error(better-escape.nvim): Timeout must be a number."
