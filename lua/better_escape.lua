@@ -11,6 +11,14 @@ local t = function(str)
   return vim.api.nvim_replace_termcodes(str, true, true, true)
 end
 
+local function start_timeout(timeout)
+  vim.g.better_escape_flag = true
+  local timer = vim.loop.new_timer()
+  timer:start(timeout, 0, function()
+    vim.g.better_escape_flag = false
+  end)
+end
+
 function M.check_charaters()
   local first_char = settings.mapping:sub(1, 1)
   local second_char = settings.mapping:sub(2, 2)
@@ -26,11 +34,7 @@ function M.check_charaters()
     previuos_chars = {}
   else
     if vim.v.char == first_char then
-      vim.g.better_escape_flag = true
-      local timer = vim.loop.new_timer()
-      timer:start(timeout, 0, function()
-        vim.g.better_escape_flag = false
-      end)
+      start_timeout(timeout)
     else
     end
   end
