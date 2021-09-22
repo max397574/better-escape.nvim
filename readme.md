@@ -33,11 +33,13 @@ Just use your mapping.
 
 ⚙️Customization
 -------------
+Call the setup function before calling the init function.
+
 ```lua
 -- lua, default settings
 require("betterEscape_nvim").setup {
-    settings.mapping = "jk" -- the mapping to escape
-    settings.timeout = 200 -- the time in which the keys must be hit in ms
+    mapping = "jk" -- the mapping to escape
+    timeout = 200 -- the time in which the keys must be hit in ms
 }
 ```
 
@@ -45,8 +47,8 @@ require("betterEscape_nvim").setup {
 -- Vimscript, default settings
 lua << EOF
 require("betterEscape_nvim").setup {
-    settings.mapping = "jk" -- the mapping to escape
-    settings.timeout = 200 -- the time in which the keys must be hit in ms
+    mapping = "jk" -- the mapping to escape
+    timeout = 200 -- the time in which the keys must be hit in ms
 }
 EOF
 ```
