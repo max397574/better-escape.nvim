@@ -2,7 +2,7 @@ local M = {}
 local previuos_chars = {}
 vim.g.better_escape_flag = false
 local settings = {
-  mapping = "jk",
+  mapping = {"jk","kj"},
   timeout = 200,
 }
 
@@ -28,6 +28,12 @@ local function check_timeout()
 end
 
 function M.check_charaters()
+  local first_chars = {}
+  local second_chars = {}
+  for _, shortcut in pairs(settings.mapping) do
+    table.insert(first_chars,(string.sub(shortcut,1,1)))
+    table.insert(second_chars,(string.sub(shortcut,2,2)))
+  end
   local first_char = settings.mapping:sub(1, 1)
   local second_char = settings.mapping:sub(2, 2)
   local timeout = settings.timeout
@@ -43,8 +49,8 @@ function M.check_charaters()
 end
 
 local function validate_settings()
-  if type(settings.mapping) ~= "string" then
-    print "Error(better-escape.nvim): Mapping must be a string."
+  if type(settings.mapping) ~= "table" then
+    print "Error(better-escape.nvim): Mapping must be a table."
   end
   if #settings.mapping ~= 2 then
     print "Error(better-escape.nvim): Mapping must be 2 keys."
@@ -59,7 +65,7 @@ end
 
 function M.setup(update)
   settings = vim.tbl_deep_extend("force", settings, update or {})
-  vim.cmd [[au InsertCharPre * lua require"better_escape".check_charaters()]]
+  -- vim.cmd [[au InsertCharPre * lua require"better_escape".check_charaters()]]
   validate_settings()
 end
 
