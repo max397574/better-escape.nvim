@@ -7,6 +7,7 @@ This is a lua version of
 --------
 * Escape without getting delay when typing in insert mode
 * Customizable mapping and timeout
+* Use multiple mappings
 
 📦Installation
 ------------
@@ -29,7 +30,7 @@ use {
 
 ✅Usage
 -----
-Just use your mapping.
+Just use your mappings.
 
 ⚙️Customization
 -------------
@@ -38,7 +39,7 @@ Call the setup function before calling the init function.
 ```lua
 -- lua, default settings
 require("better_escape").setup {
-    mapping = "jk", -- the mapping to escape
+    mapping = {"jk", "jj"}, -- a table with mappings to use
     timeout = 200, -- the time in which the keys must be hit in ms
 }
 ```
@@ -47,7 +48,7 @@ require("better_escape").setup {
 -- Vimscript, default settings
 lua << EOF
 require("better_escape").setup {
-    mapping = "jk", -- the mapping to escape
+    mapping = {"jk","jj"}, -- a table with mappings to use
     timeout = 200, -- the time in which the keys must be hit in ms
 }
 EOF
@@ -62,7 +63,6 @@ EOF
 💡Future Plans/Ideas
 ------------------
 * Fix the limitations.
-* Allow multiple mappings
 
 👀Demo
 ------
