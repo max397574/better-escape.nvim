@@ -2,7 +2,7 @@ local M = {}
 local previuos_chars = {}
 vim.g.better_escape_flag = false
 local settings = {
-  mapping = "jk",
+  mapping = { "jk", "jj" },
   timeout = 200,
 }
 
@@ -18,6 +18,16 @@ local function start_timeout(timeout)
   end)
 end
 
+local function get_indices(tbl, element)
+  local indices = {}
+  for idx, value in ipairs(tbl) do
+    if element == value then
+      table.insert(indices, idx)
+    end
+  end
+  return indices
+end
+
 local function check_timeout()
   if vim.g.better_escape_flag then
     vim.api.nvim_feedkeys(t "<BS><BS><Esc>", "n", false)
@@ -28,26 +38,41 @@ local function check_timeout()
 end
 
 function M.check_charaters()
-  local first_char = settings.mapping:sub(1, 1)
-  local second_char = settings.mapping:sub(2, 2)
+  local first_chars = {}
+  local second_chars = {}
+  for _, shortcut in pairs(settings.mapping) do
+    table.insert(first_chars, (string.sub(shortcut, 1, 1)))
+    table.insert(second_chars, (string.sub(shortcut, 2, 2)))
+  end
+
   local timeout = settings.timeout
   table.insert(previuos_chars, vim.v.char)
   local prev_char = previuos_chars[#previuos_chars - 1] or ""
-  if vim.v.char == second_char and prev_char == first_char then
-    check_timeout()
+  if
+    vim.tbl_contains(second_chars, vim.v.char)
+    and vim.tbl_contains(first_chars, prev_char)
+  then
+    local indices = get_indices(second_chars, vim.v.char)
+    for _, idx in pairs(indices) do
+      if first_chars[idx] == prev_char then
+        check_timeout()
+      end
+    end
   else
-    if vim.v.char == first_char then
+    if vim.tbl_contains(first_chars, vim.v.char) then
       start_timeout(timeout)
     end
   end
 end
 
 local function validate_settings()
-  if type(settings.mapping) ~= "string" then
-    print "Error(better-escape.nvim): Mapping must be a string."
+  if type(settings.mapping) ~= "table" then
+    print "Error(better-escape.nvim): Mapping must be a table."
   end
-  if #settings.mapping ~= 2 then
-    print "Error(better-escape.nvim): Mapping must be 2 keys."
+  for _, mapping in ipairs(settings.mapping) do
+    if #mapping ~= 2 then
+      print "Error(better-escape.nvim): Mapping must be 2 keys."
+    end
   end
   if type(settings.timeout) ~= "number" then
     print "Error(better-escape.nvim): Timeout must be a number."
