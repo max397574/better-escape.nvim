@@ -60,7 +60,8 @@ EOF
 
 💡Future Plans/Ideas
 ------------------
-Fix the limitations.
+* Fix the limitations.
+* Allow multiple mappings
 
 👀Demo
 ------
