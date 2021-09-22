@@ -34,15 +34,19 @@ function M.check_charaters()
     table.insert(first_chars,(string.sub(shortcut,1,1)))
     table.insert(second_chars,(string.sub(shortcut,2,2)))
   end
-  local first_char = settings.mapping:sub(1, 1)
-  local second_char = settings.mapping:sub(2, 2)
+
   local timeout = settings.timeout
   table.insert(previuos_chars, vim.v.char)
   local prev_char = previuos_chars[#previuos_chars - 1] or ""
-  if vim.v.char == second_char and prev_char == first_char then
-    check_timeout()
+  if vim.tbl_contains(second_chars, vim.v.char) and vim.tbl_contains(first_chars, prev_char) then
+    local idx = vim.fn.index(second_chars ,vim.v.char)
+    print(first_chars[idx+1])
+    print(second_chars[idx+1])
+    if idx == vim.fn.index(first_chars, prev_char) then
+      check_timeout()
+    end
   else
-    if vim.v.char == first_char then
+    if vim.tbl_contains(first_chars, vim.v.char) then
       start_timeout(timeout)
     end
   end
@@ -65,7 +69,7 @@ end
 
 function M.setup(update)
   settings = vim.tbl_deep_extend("force", settings, update or {})
-  -- vim.cmd [[au InsertCharPre * lua require"better_escape".check_charaters()]]
+  vim.cmd [[au InsertCharPre * lua require"better_escape".check_charaters()]]
   validate_settings()
 end
 
