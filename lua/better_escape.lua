@@ -18,6 +18,15 @@ local function start_timeout(timeout)
   end)
 end
 
+local function check_timeout()
+    if vim.g.better_escape_flag then
+      vim.api.nvim_feedkeys(t "<BS><BS><Esc>", "n", false)
+    else
+      vim.g.better_escape_flag = false
+    end
+    previuos_chars = {}
+end
+
 function M.check_charaters()
   local first_char = settings.mapping:sub(1, 1)
   local second_char = settings.mapping:sub(2, 2)
@@ -25,16 +34,10 @@ function M.check_charaters()
   table.insert(previuos_chars, vim.v.char)
   local prev_char = previuos_chars[#previuos_chars - 1] or ""
   if vim.v.char == second_char and prev_char == first_char then
-    if vim.g.better_escape_flag then
-      vim.api.nvim_feedkeys(t "<BS><BS><Esc>", "n", false)
-    else
-      vim.g.better_escape_flag = false
-    end
-    previuos_chars = {}
+    check_timeout()
   else
     if vim.v.char == first_char then
       start_timeout(timeout)
-    else
     end
   end
 end
