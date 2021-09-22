@@ -14,7 +14,7 @@ Use your favourite package manager and call setup function.
 ```vim
 " Vimscript with vim-plug
 Plug 'max397574/better-escape.nvim'
-lua require("better_escape").init()
+lua require("better_escape").setup()
 ```
 
 ```lua
@@ -22,7 +22,7 @@ lua require("better_escape").init()
 use {
   "max397574/better-escape.nvim",
   config = function()
-    require("better_escape").init()
+    require("better_escape").setup()
   end,
 }
 ```
@@ -55,7 +55,7 @@ EOF
 
 🚫Limitations/Issues
 --------------------
-* Currently doesn't work with mappings which have the same letter e.g. jj.
+* Doesn't always work correctly if it's the first thing you type after enter insert mode for the first time.
 * Doesn't work if one of the keys of the mapping is mapped to something else.
 
 💡Future Plans/Ideas
