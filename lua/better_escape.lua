@@ -4,7 +4,7 @@ local previuos_chars = {}
 vim.g.better_escape_flag = false
 local settings = {
   mapping = "jj",
-  timeout = 200
+  timeout = 200,
 }
 
 local t = function(str)
@@ -24,7 +24,8 @@ function M.check_charaters()
       vim.g.better_escape_flag = false
     end
     previuos_chars = {}
-  else if vim.v.char == first_char then
+  else
+    if vim.v.char == first_char then
       vim.g.better_escape_flag = true
       local timer = vim.loop.new_timer()
       timer:start(timeout, 0, function()
@@ -35,24 +36,24 @@ function M.check_charaters()
   end
 end
 
-  local function validate_settings()
-    if type(settings.mapping) ~= "string" then
-      print("Error(better-escape.nvim): Mapping must be a string.")
-    end
-    if #settings.mapping ~= 2 then
-      print("Error(better-escape.nvim): Mapping must be 2 keys.")
-    end
-    if type(settings.timeout) ~= "number" then
-      print("Error(better-escape.nvim): Timeout must be a number.")
-    end
+local function validate_settings()
+  if type(settings.mapping) ~= "string" then
+    print "Error(better-escape.nvim): Mapping must be a string."
   end
+  if #settings.mapping ~= 2 then
+    print "Error(better-escape.nvim): Mapping must be 2 keys."
+  end
+  if type(settings.timeout) ~= "number" then
+    print "Error(better-escape.nvim): Timeout must be a number."
+  end
+end
 
-  function M.setup(update)
-    -- settings = setmetatable(update, { __index = settings })
-    settings = vim.tbl_deep_extend("force", settings, update or {})
+function M.setup(update)
+  -- settings = setmetatable(update, { __index = settings })
+  settings = vim.tbl_deep_extend("force", settings, update or {})
 
-    vim.cmd [[au InsertCharPre * lua require"better_escape".check_charaters()]]
-    validate_settings()
+  vim.cmd [[au InsertCharPre * lua require"better_escape".check_charaters()]]
+  validate_settings()
 end
 
 return M
