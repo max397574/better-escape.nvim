@@ -43,13 +43,13 @@ end
 
 local function validate_settings()
   if type(settings.mapping) ~="string" then
-    print("Error: Mapping must be a string.")
+    print("Error(better-escape.nvim): Mapping must be a string.")
   end
   if #settings.mapping~=2 then
-    print("Error: Mapping must be 2 keys.")
+    print("Error(better-escape.nvim): Mapping must be 2 keys.")
   end
   if type(settings.timeout) ~="number" then
-    print("Error: Timeout must be a number.")
+    print("Error(better-escape.nvim): Timeout must be a number.")
   end
 end
 
