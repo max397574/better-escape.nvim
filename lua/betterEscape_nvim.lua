@@ -18,11 +18,11 @@ local previuosly_typed_chars = {}
 BetterEscape_nvim_time = false
 
 function M.check_charaters()
-  local first_char = string.sub(settings.mapping,1,1)
-  local second_char = string.sub(settings.mapping,2,2)
+  local first_char = string.sub(settings.mapping, 1, 1)
+  local second_char = string.sub(settings.mapping, 2, 2)
   local timeout = tonumber(settings.timeout)
   table.insert(previuosly_typed_chars, vim.v.char)
-  local prev_char = previuosly_typed_chars[#previuosly_typed_chars-1] or ""
+  local prev_char = previuosly_typed_chars[#previuosly_typed_chars - 1] or ""
   if vim.v.char == first_char then
     BetterEscape_nvim_time = true
     local timer = vim.loop.new_timer()
@@ -32,14 +32,13 @@ function M.check_charaters()
   else
     if vim.v.char == second_char and prev_char == first_char then
       if BetterEscape_nvim_time then
-        api.nvim_feedkeys(t('<BS>')..t('<BS>')..t('<Esc>'), 'i', false)
+        api.nvim_feedkeys(t "<BS>" .. t "<BS>" .. t "<Esc>", "i", false)
       else
         BetterEscape_nvim_time = false
       end
       previuosly_typed_chars = {}
     end
   end
-
 end
 
 local function create_autocmds()
@@ -49,6 +48,5 @@ end
 function M.init()
   create_autocmds()
 end
-
 
 return M
