@@ -3,7 +3,7 @@ local M = {}
 local settings = {}
 
 settings.mapping = "jk"
-settings.timeout = "300"
+settings.timeout = "200"
 
 function M.setup(update)
   settings = setmetatable(update, { __index = settings })
