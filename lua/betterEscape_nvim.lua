@@ -15,23 +15,26 @@ end
 
 local previuosly_typed_chars = {}
 
-BetterEscape_nvim_time = 1000
+BetterEscape_nvim_time = false
 
 function M.check_charaters()
   local first_char = string.sub(settings.mapping,1,1)
   local second_char = string.sub(settings.mapping,2,2)
-  local timeout = (tonumber(settings.timeout))/10000
+  local timeout = tonumber(settings.timeout)
   table.insert(previuosly_typed_chars, vim.v.char)
   local prev_char = previuosly_typed_chars[#previuosly_typed_chars-1] or ""
   if vim.v.char == first_char then
-    BetterEscape_nvim_time = os.clock()
+    BetterEscape_nvim_time = true
+    local timer = vim.loop.new_timer()
+    timer:start(timeout, 0, function()
+      BetterEscape_nvim_time = false
+    end)
   else
     if vim.v.char == second_char and prev_char == first_char then
-      local time_difference = os.clock() - BetterEscape_nvim_time
-      if time_difference < timeout then
+      if BetterEscape_nvim_time then
         vim.fn.feedkeys(t('<Esc>').."xhx", 'i')
       else
-        BetterEscape_nvim_time = 1000
+        BetterEscape_nvim_time = false
       end
       previuosly_typed_chars = {}
     end
