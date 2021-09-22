@@ -54,7 +54,7 @@ local function validate_settings()
 end
 
 local function create_autocmds()
-  vim.cmd [[au InsertCharPre * lua require"betterEscape_nvim".check_charaters()]]
+  vim.cmd [[au InsertCharPre * lua require"better_escape".check_charaters()]]
 end
 
 function M.init()
