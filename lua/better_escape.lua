@@ -1,5 +1,4 @@
 local M = {}
-
 local previuos_chars = {}
 vim.g.better_escape_flag = false
 local settings = {
@@ -49,6 +48,9 @@ local function validate_settings()
   end
   if type(settings.timeout) ~= "number" then
     print "Error(better-escape.nvim): Timeout must be a number."
+  end
+  if settings.timeout < 1 then
+    print "Error(better-escape.nvim): Timeout must be a positive number."
   end
 end
 
