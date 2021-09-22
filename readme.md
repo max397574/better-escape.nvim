@@ -14,7 +14,7 @@ Use your favourite package manager and call setup function.
 ```vim
 " Vimscript with vim-plug
 Plug 'max397574/better-escape.nvim'
-lua require("betterEscape_nvim").init()
+lua require("better_escape").init()
 ```
 
 ```lua
@@ -22,7 +22,7 @@ lua require("betterEscape_nvim").init()
 use {
   "max397574/better-escape.nvim",
   config = function()
-    require("betterEscape_nvim").init()
+    require("better_escape").init()
   end,
 }
 ```
@@ -37,7 +37,7 @@ Call the setup function before calling the init function.
 
 ```lua
 -- lua, default settings
-require("betterEscape_nvim").setup {
+require("better_escape").setup {
     mapping = "jk" -- the mapping to escape
     timeout = 200 -- the time in which the keys must be hit in ms
 }
@@ -46,7 +46,7 @@ require("betterEscape_nvim").setup {
 ```vim
 -- Vimscript, default settings
 lua << EOF
-require("betterEscape_nvim").setup {
+require("better_escape").setup {
     mapping = "jk" -- the mapping to escape
     timeout = 200 -- the time in which the keys must be hit in ms
 }
