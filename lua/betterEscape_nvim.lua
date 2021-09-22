@@ -32,7 +32,7 @@ function M.check_charaters()
   else
     if vim.v.char == second_char and prev_char == first_char then
       if BetterEscape_nvim_time then
-        vim.fn.feedkeys(t('<Esc>').."xhx", 'i')
+        vim.fn.feedkeys(t('<BS>')..t('<BS>')..t('<Esc>'), 'i')
       else
         BetterEscape_nvim_time = false
       end
