@@ -2,7 +2,7 @@ local M = {}
 local previuos_chars = {}
 vim.g.better_escape_flag = false
 local settings = {
-  mapping = {"jk","kj", "jj"},
+  mapping = {"jk", "jj"},
   timeout = 200,
 }
 
