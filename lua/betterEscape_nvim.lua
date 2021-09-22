@@ -3,7 +3,7 @@ local M = {}
 local settings = {}
 
 settings.mapping = "jk"
-settings.timeout = "200"
+settings.timeout = 200
 
 function M.setup(update)
   settings = setmetatable(update, { __index = settings })
@@ -20,7 +20,7 @@ BetterEscape_nvim_time = false
 function M.check_charaters()
   local first_char = string.sub(settings.mapping, 1, 1)
   local second_char = string.sub(settings.mapping, 2, 2)
-  local timeout = tonumber(settings.timeout)
+  local timeout = settings.timeout
   table.insert(previuosly_typed_chars, vim.v.char)
   local prev_char = previuosly_typed_chars[#previuosly_typed_chars - 1] or ""
   if vim.v.char == first_char then
@@ -41,11 +41,24 @@ function M.check_charaters()
   end
 end
 
+local function validate_settings()
+  if type(settings.mapping) ~="string" then
+    print("Error: Mapping must be a string.")
+  end
+  if #settings.mapping~=2 then
+    print("Error: Mapping must be 2 keys.")
+  end
+  if type(settings.timeout) ~="number" then
+    print("Error: Timeout must be a number.")
+  end
+end
+
 local function create_autocmds()
   vim.cmd [[au InsertCharPre * lua require"betterEscape_nvim".check_charaters()]]
 end
 
 function M.init()
+  validate_settings()
   create_autocmds()
 end
 
