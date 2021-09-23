@@ -43,6 +43,12 @@ local function check_timeout()
   previous_chars = {}
 end
 
+local function parse_mapping()
+  if type(settings.mapping) == "string" then
+    settings.mapping = {settings.mapping}
+  end
+end
+
 function M.check_charaters()
   local char = vim.v.char
 
