@@ -1,5 +1,7 @@
 local M = {}
-local previuos_chars = {}
+
+local previous_chars = {}
+
 vim.g.better_escape_flag = false
 local settings = {
   mapping = { "jk", "jj" },
@@ -34,7 +36,7 @@ local function check_timeout()
   else
     vim.g.better_escape_flag = false
   end
-  previuos_chars = {}
+  previous_chars = {}
 end
 
 function M.check_charaters()
@@ -46,8 +48,8 @@ function M.check_charaters()
   end
 
   local timeout = settings.timeout
-  table.insert(previuos_chars, vim.v.char)
-  local prev_char = previuos_chars[#previuos_chars - 1] or ""
+  table.insert(previous_chars, vim.v.char)
+  local prev_char = previous_chars[#previous_chars - 1] or ""
   if
     vim.tbl_contains(second_chars, vim.v.char)
     and vim.tbl_contains(first_chars, prev_char)
