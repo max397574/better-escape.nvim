@@ -45,6 +45,13 @@ function M.check_charaters()
     table.insert(second_chars, (string.sub(shortcut, 2, 2)))
   end
 
+  if type(settings.mapping) == "string" then
+    if #settings.mapping == 2 then
+      settings.mapping = {settings.mapping}
+    else
+    print("Error(better-escape.nvim): Mapping must be 2 keys.")
+    end
+  end
   local timeout = settings.timeout
   table.insert(previuos_chars, vim.v.char)
   local prev_char = previuos_chars[#previuos_chars - 1] or ""
@@ -66,8 +73,8 @@ function M.check_charaters()
 end
 
 local function validate_settings()
-  if type(settings.mapping) ~= "table" then
-    print "Error(better-escape.nvim): Mapping must be a table."
+  if type(settings.mapping) ~= "table" and type(settings.mapping) ~= "string" then
+    print "Error(better-escape.nvim): Mapping must be a table or string."
   end
   for _, mapping in ipairs(settings.mapping) do
     if #mapping ~= 2 then
