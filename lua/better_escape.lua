@@ -1,10 +1,8 @@
 local M = {}
 
-local api = vim.api
-
 local settings = {
   mapping = { "jk", "jj" },
-  timeout = 200,
+  keys = "<Esc>", -- function/string
 }
 
 local flag = false
@@ -16,7 +14,7 @@ local function start_timeout()
   flag = true
   vim.defer_fn(function()
     flag = false
-  end, settings.timeout)
+  end, settings.timeout or vim.o.timeoutlen)
 end
 
 local function get_indices(tbl, element)
@@ -29,70 +27,82 @@ local function get_indices(tbl, element)
   return indices
 end
 
-local check_timeout = (function()
-  local keys = api.nvim_replace_termcodes("<BS><BS><Esc>", true, true, true)
-  return function()
-    if flag then
-      api.nvim_feedkeys(keys, "n", false)
-    end
-    previous_chars = {}
+local function feed(keys)
+  vim.api.nvim_feedkeys(
+    vim.api.nvim_replace_termcodes(keys, true, true, true),
+    "n",
+    false
+  )
+end
+
+local function check_timeout()
+  if flag then
+    feed "<BS><BS>"
+    feed(type(settings.keys) == "string" and settings.keys or settings.keys())
   end
-end)()
+  previous_chars = {}
+end
 
 function M.check_charaters()
-  table.insert(previous_chars, vim.v.char)
+  local char = vim.v.char
+
+  table.insert(previous_chars, char)
   local prev_char = previous_chars[#previous_chars - 1] or ""
   if
-    vim.tbl_contains(second_chars, vim.v.char)
+    vim.tbl_contains(second_chars, char)
     and vim.tbl_contains(first_chars, prev_char)
   then
-    local indices = get_indices(second_chars, vim.v.char)
+    local indices = get_indices(second_chars, char)
     for _, idx in ipairs(indices) do
       if first_chars[idx] == prev_char then
         check_timeout()
       end
     end
   else
-    if vim.tbl_contains(first_chars, vim.v.char) then
+    if vim.tbl_contains(first_chars, char) then
       start_timeout()
     end
   end
 end
 
-local function error(msg)
-  vim.notify(msg, vim.log.levels.ERROR)
-end
-
 local function validate_settings()
-  if type(settings.mapping) ~= "table" then
-    error "Error(better-escape.nvim): Mapping must be a table."
-    return
-  end
+  assert(
+    type(settings.mapping) == "table",
+    "Error(better-escape.nvim): Mapping must be a table."
+  )
   for _, mapping in ipairs(settings.mapping) do
-    if #mapping ~= 2 then
-      error "Error(better-escape.nvim): Mapping must be 2 keys."
-      return
-    end
+    assert(#mapping == 2, "Error(better-escape.nvim): Mapping must be 2 keys.")
   end
-  if type(settings.timeout) ~= "number" then
-    error "Error(better-escape.nvim): Timeout must be a number."
-    return
+
+  if settings.timeout then
+    assert(
+      type(settings.timeout) == "number",
+      "Error(better-escape.nvim): Timeout must be a number."
+    )
+    assert(
+      settings.timeout >= 1,
+      "Error(better-escape.nvim): Timeout must be a positive number."
+    )
   end
-  if settings.timeout < 1 then
-    error "Error(better-escape.nvim): Timeout must be a positive number."
-    return
-  end
-  return true
+
+  assert(
+    vim.tbl_contains({ "string", "function" }, type(settings.keys)),
+    "Error(better-escape.nvim): Keys must be a function or string."
+  )
 end
 
 function M.setup(update)
   settings = vim.tbl_deep_extend("force", settings, update or {})
-  if validate_settings() then
-    for _, shortcut in pairs(settings.mapping) do
+  local ok, msg = pcall(validate_settings)
+  if ok then
+    for _, shortcut in ipairs(settings.mapping) do
       table.insert(first_chars, (string.sub(shortcut, 1, 1)))
       table.insert(second_chars, (string.sub(shortcut, 2, 2)))
     end
+
     vim.cmd [[au InsertCharPre * lua require"better_escape".check_charaters()]]
+  else
+    vim.notify(msg, vim.log.levels.ERROR)
   end
 end
 

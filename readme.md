@@ -40,7 +40,13 @@ Call the setup function before calling the init function.
 -- lua, default settings
 require("better_escape").setup {
     mapping = {"jk", "jj"}, -- a table with mappings to use
-    timeout = 200, -- the time in which the keys must be hit in ms
+    timeout = vim.o.timeoutlen, -- the time in which the keys must be hit in ms. Use option timeoutlen by default
+    keys = "<Esc>", -- keys used for escaping, if it is a function will use the result everytime
+    -- example
+    -- keys = function()
+    --   return vim.fn.col '.' - 2 >= 1 and '<esc>l' or '<esc>'
+    -- end,
+}
 }
 ```
 
@@ -49,7 +55,8 @@ require("better_escape").setup {
 lua << EOF
 require("better_escape").setup {
     mapping = {"jk","jj"}, -- a table with mappings to use
-    timeout = 200, -- the time in which the keys must be hit in ms
+    timeout = vim.o.timeoutlen, -- the time in which the keys must be hit in ms. Use option timeoutlen by default
+    keys = "<Esc>", -- keys used for escaping, if it is a function will use the result everytime
 }
 EOF
 ```
