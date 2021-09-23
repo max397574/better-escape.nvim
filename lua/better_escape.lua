@@ -52,8 +52,10 @@ end
 function M.check_charaters()
   local char = vim.v.char
 
+
   table.insert(previous_chars, char)
   local prev_char = previous_chars[#previous_chars - 1] or ""
+
   if
     vim.tbl_contains(second_chars, char)
     and vim.tbl_contains(first_chars, prev_char)
@@ -72,10 +74,12 @@ function M.check_charaters()
 end
 
 local function validate_settings()
+
   assert(
     type(settings.mapping) == "table",
     "Error(better-escape.nvim): Mapping must be a table."
   )
+
   for _, mapping in ipairs(settings.mapping) do
     assert(#mapping == 2, "Error(better-escape.nvim): Mapping must be 2 keys.")
   end
