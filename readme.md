@@ -8,16 +8,11 @@ This is a lua version of
 * Escape without getting delay when typing in insert mode
 * Customizable mapping and timeout
 * Use multiple mappings
+* Really small and fast
 
 📦Installation
 ------------
 Use your favourite package manager and call setup function.
-```vim
-" Vimscript with vim-plug
-Plug 'max397574/better-escape.nvim'
-lua require("better_escape").setup()
-```
-
 ```lua
 -- lua with packer.nvim
 use {
@@ -28,10 +23,6 @@ use {
 }
 ```
 
-✅Usage
------
-Just use your mappings.
-
 ⚙️Customization
 -------------
 Call the setup function before calling the init function.
@@ -40,27 +31,19 @@ Call the setup function before calling the init function.
 -- lua, default settings
 require("better_escape").setup {
     mapping = {"jk", "jj"}, -- a table with mappings to use
-    timeout = 200, -- the time in which the keys must be hit in ms
+    timeout = vim.o.timeoutlen, -- the time in which the keys must be hit in ms. Use option timeoutlen by default
+    keys = "<Esc>", -- keys used for escaping, if it is a function will use the result everytime
+    -- example
+    -- keys = function()
+    --   return vim.fn.col '.' - 2 >= 1 and '<esc>l' or '<esc>'
+    -- end,
 }
-```
-
-```vim
--- Vimscript, default settings
-lua << EOF
-require("better_escape").setup {
-    mapping = {"jk","jj"}, -- a table with mappings to use
-    timeout = 200, -- the time in which the keys must be hit in ms
 }
-EOF
 ```
 
 🚫Limitations/Issues
 --------------------
 * Doesn't work if one of the keys of the mapping is mapped to something else.
-
-💡Future Plans/Ideas
-------------------
-* Fix the limitations.
 
 👀Demo
 ------
