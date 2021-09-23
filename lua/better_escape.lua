@@ -99,6 +99,7 @@ end
 
 function M.setup(update)
   settings = vim.tbl_deep_extend("force", settings, update or {})
+  parse_mapping()
   local ok, msg = pcall(validate_settings)
   if ok then
     for _, shortcut in ipairs(settings.mapping) do
