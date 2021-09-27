@@ -1,6 +1,7 @@
 local M = {}
 
 local settings = {
+  timeout = vim.o.timeoutlen,
   mapping = { "jk", "jj" },
   keys = "<Esc>", -- function/string
 }
@@ -14,7 +15,7 @@ local function start_timeout()
   flag = true
   vim.defer_fn(function()
     flag = false
-  end, settings.timeout or vim.o.timeoutlen)
+  end, settings.timeout)
 end
 
 local function get_indices(tbl, element)
@@ -37,21 +38,22 @@ end
 
 local function check_timeout()
   if flag then
-    feed "<BS><BS>"
+    feed "<BS><BS>" -- delete the characters from the mapping
+    -- if keys is string use it, else use it as a function
     feed(type(settings.keys) == "string" and settings.keys or settings.keys())
   end
   previous_chars = {}
 end
 
 local function parse_mapping()
+  -- if mapping is a string (single mapping) make it a table
   if type(settings.mapping) == "string" then
-    settings.mapping = {settings.mapping}
+    settings.mapping = { settings.mapping }
   end
 end
 
 function M.check_charaters()
   local char = vim.v.char
-
 
   table.insert(previous_chars, char)
   local prev_char = previous_chars[#previous_chars - 1] or ""
@@ -60,6 +62,9 @@ function M.check_charaters()
     vim.tbl_contains(second_chars, char)
     and vim.tbl_contains(first_chars, prev_char)
   then
+    --[[
+    search for matches of the previous typed char
+    at indices where the second char occurs]]--
     local indices = get_indices(second_chars, char)
     for _, idx in ipairs(indices) do
       if first_chars[idx] == prev_char then
@@ -67,6 +72,7 @@ function M.check_charaters()
       end
     end
   else
+    -- if the typed char is first in a mapping, start the timeout
     if vim.tbl_contains(first_chars, char) then
       start_timeout()
     end
@@ -74,7 +80,6 @@ function M.check_charaters()
 end
 
 local function validate_settings()
-
   assert(
     type(settings.mapping) == "table",
     "Error(better-escape.nvim): Mapping must be a table."
@@ -102,10 +107,15 @@ local function validate_settings()
 end
 
 function M.setup(update)
+  if vim.g.better_escape_loaded then
+    return
+  end
+  vim.g.better_escape_loaded = true
   settings = vim.tbl_deep_extend("force", settings, update or {})
   parse_mapping()
   local ok, msg = pcall(validate_settings)
   if ok then
+    -- create tables with the first and seconds chars of the mappings
     for _, shortcut in ipairs(settings.mapping) do
       table.insert(first_chars, (string.sub(shortcut, 1, 1)))
       table.insert(second_chars, (string.sub(shortcut, 2, 2)))
