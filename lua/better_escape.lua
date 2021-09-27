@@ -107,6 +107,10 @@ local function validate_settings()
 end
 
 function M.setup(update)
+  if vim.g.better_escape_loaded then
+    return
+  end
+  vim.g.better_escape_loaded = true
   settings = vim.tbl_deep_extend("force", settings, update or {})
   parse_mapping()
   local ok, msg = pcall(validate_settings)
