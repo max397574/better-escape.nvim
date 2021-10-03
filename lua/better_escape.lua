@@ -18,6 +18,10 @@ local function start_timeout()
   end, settings.timeout)
 end
 
+---@param tbl table table to search through
+---@param element any element to search in tbl
+---@return table indices
+--- Search for indices in tbl where element occurs
 local function get_indices(tbl, element)
   local indices = {}
   for idx, value in ipairs(tbl) do
@@ -28,6 +32,8 @@ local function get_indices(tbl, element)
   return indices
 end
 
+---@param keys string keys to feed
+--- Replace keys with termcodes and feed them
 local function feed(keys)
   vim.api.nvim_feedkeys(
     vim.api.nvim_replace_termcodes(keys, true, true, true),
