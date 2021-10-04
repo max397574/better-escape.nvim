@@ -41,18 +41,14 @@ require("better_escape").setup {
 }
 ```
 
-🚫Limitations/Issues
---------------------
-* Doesn't work if one of the keys of the mapping is mapped to something else.
-
 👀Demo
 ------
 
-When using `inoremap jk <ESC>`:
+#`inoremap jk <ESC>`:
 
 https://user-images.githubusercontent.com/81827001/134317521-0c446238-c24c-4303-9539-e5eb6236d221.mp4
 
-When using this plugin:
+# better-escape.nvim:
 
 https://user-images.githubusercontent.com/81827001/134317540-95a66237-dd77-49a9-8f11-8b037458354c.mp4
 
