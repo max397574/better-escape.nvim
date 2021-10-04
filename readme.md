@@ -44,7 +44,7 @@ require("better_escape").setup {
 👀Demo
 ------
 
-#`inoremap jk <ESC>`:
+# `inoremap jk <ESC>`:
 
 https://user-images.githubusercontent.com/81827001/134317521-0c446238-c24c-4303-9539-e5eb6236d221.mp4
 
