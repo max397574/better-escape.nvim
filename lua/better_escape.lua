@@ -3,6 +3,7 @@ local M = {}
 local settings = {
   timeout = vim.o.timeoutlen,
   mapping = { "jk", "jj" },
+  clear_empty_lines = false,
   keys = "<Esc>", -- function/string
 }
 
@@ -41,12 +42,17 @@ local function feed(keys)
     false
   )
 end
-
 local function check_timeout()
   if flag then
     feed "<BS><BS>" -- delete the characters from the mapping
     -- if keys is string use it, else use it as a function
     feed(type(settings.keys) == "string" and settings.keys or settings.keys())
+    if settings.clear_empty_lines then
+      local current_line = vim.api.nvim_get_current_line()
+      if string.match(current_line, "^%s+j$") then
+        feed("0D")
+      end
+    end
   end
   previous_chars = {}
 end
