@@ -12,7 +12,7 @@ This is a lua version of
 
 📦Installation
 ------------
-Use your favourite package manager and call setup function.
+Use your favourite package manager and call the setup function.
 ```lua
 -- lua with packer.nvim
 use {
@@ -25,7 +25,7 @@ use {
 
 ⚙️Customization
 -------------
-Call the setup function before calling the init function.
+Call the setup function with your options as arguments.
 
 ```lua
 -- lua, default settings
