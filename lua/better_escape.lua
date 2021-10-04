@@ -3,6 +3,7 @@ local M = {}
 local settings = {
   timeout = vim.o.timeoutlen,
   mapping = { "jk", "jj" },
+  clear_empty_lines = false,
   keys = "<Esc>", -- function/string
 }
 
@@ -18,6 +19,10 @@ local function start_timeout()
   end, settings.timeout)
 end
 
+---@param tbl table table to search through
+---@param element any element to search in tbl
+---@return table indices
+--- Search for indices in tbl where element occurs
 local function get_indices(tbl, element)
   local indices = {}
   for idx, value in ipairs(tbl) do
@@ -28,6 +33,8 @@ local function get_indices(tbl, element)
   return indices
 end
 
+---@param keys string keys to feed
+--- Replace keys with termcodes and feed them
 local function feed(keys)
   vim.api.nvim_feedkeys(
     vim.api.nvim_replace_termcodes(keys, true, true, true),
@@ -35,12 +42,17 @@ local function feed(keys)
     false
   )
 end
-
 local function check_timeout()
   if flag then
     feed "<BS><BS>" -- delete the characters from the mapping
     -- if keys is string use it, else use it as a function
     feed(type(settings.keys) == "string" and settings.keys or settings.keys())
+    if settings.clear_empty_lines then
+      local current_line = vim.api.nvim_get_current_line()
+      if string.match(current_line, "^%s+j$") then
+        feed("0D")
+      end
+    end
   end
   previous_chars = {}
 end
