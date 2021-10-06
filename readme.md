@@ -12,7 +12,7 @@ This is a lua version of
 
 📦Installation
 ------------
-Use your favourite package manager and call setup function.
+Use your favourite package manager and call the setup function.
 ```lua
 -- lua with packer.nvim
 use {
@@ -25,7 +25,7 @@ use {
 
 ⚙️Customization
 -------------
-Call the setup function before calling the init function.
+Call the setup function with your options as arguments.
 
 ```lua
 -- lua, default settings
@@ -44,11 +44,6 @@ require("better_escape").setup {
 👀Demo
 ------
 
-### `inoremap jk <ESC>`:
+![mapping](https://user-images.githubusercontent.com/81827001/135870002-07c1dc41-f3e7-4ece-af6f-50e9b0711a66.gif)
 
-https://user-images.githubusercontent.com/81827001/134317521-0c446238-c24c-4303-9539-e5eb6236d221.mp4
-
-### better-escape.nvim:
-
-https://user-images.githubusercontent.com/81827001/134317540-95a66237-dd77-49a9-8f11-8b037458354c.mp4
-
+![plugin](https://user-images.githubusercontent.com/81827001/135870101-febf3507-9327-4b80-aa9a-ba08bff6b8d4.gif)
