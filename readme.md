@@ -1,7 +1,11 @@
 # 🚪better-escape.nvim
 
-This is a lua version of
-[better_escape.vim](https://github.com/jdhao/better-escape.vim)
+A lot of people have mappings like `jk` or `jj` to esacpe insert mode.
+The problem with this mappings is that whenever you type a `j`, neovim wait about 100-500ms (depending on your timeoutlen) to see, if you type a `j` or a `k` because these are mapped.
+Only after that time the `j` will be inserted.
+Then you always get a delay when typing a `j`.
+This looks like this:
+<insert picture>
 
 ✨Features
 --------
@@ -47,3 +51,20 @@ require("better_escape").setup {
 ![mapping](https://user-images.githubusercontent.com/81827001/135870002-07c1dc41-f3e7-4ece-af6f-50e9b0711a66.gif)
 
 ![plugin](https://user-images.githubusercontent.com/81827001/135870101-febf3507-9327-4b80-aa9a-ba08bff6b8d4.gif)
+
+🎓How it works
+----------------
+
+With the mappings there are two tables created.
+One contains all first characters and one all second characters.
+Whenever you type a character the plugin checks if it's in any of the two tables
+If it is in the first one, the plugin starts a timer.
+If it is the second the plugin checks whether the character you typed before is in the table with the first characters.
+If this is the case the plugin gets all the indices where the characters are in the tables.
+Then is searches for matches.
+If there is a match, that means that there is a mapping which has the typed character as second and the previous typed character as first character.
+The plugin then checks if the time passed since the first character was types is smaller than `timoutlen`.
+If this is the case the two characters get deleted and `keys` get feed or executed.
+
+Like this it is possible that the characters really get inserted and therefor you have no delay after typing one of the characters of you mapping.
+With the timeoutlen it's still possible to type the characters of your mappings.
