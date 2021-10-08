@@ -5,7 +5,8 @@ The problem with this mappings is that whenever you type a `j`, neovim wait abou
 Only after that time the `j` will be inserted.
 Then you always get a delay when typing a `j`.
 This looks like this:
-<insert picture>
+
+![Screen Shot 2021-10-08 at 16 21 23](https://user-images.githubusercontent.com/81827001/136576543-c8b4e802-84a8-4087-a7a4-f7d069931885.png)
 
 ✨Features
 --------
