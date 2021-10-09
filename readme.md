@@ -1,5 +1,8 @@
 # 🚪better-escape.nvim
 
+This is a lua version of
+[better_escape.vim](https://github.com/jdhao/better-escape.vim)
+
 A lot of people have mappings like `jk` or `jj` to esacpe insert mode.
 The problem with this mappings is that whenever you type a `j`, neovim wait about 100-500ms (depending on your timeoutlen) to see, if you type a `j` or a `k` because these are mapped.
 Only after that time the `j` will be inserted.
