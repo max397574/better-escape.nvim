@@ -50,7 +50,7 @@ local function check_timeout()
     end
     feed "<BS><BS>" -- delete the characters from the mapping
     -- if keys is string use it, else use it as a function
-    if not settigns.keys_before_delete then
+    if not settings.keys_before_delete then
       feed(type(settings.keys) == "string" and settings.keys or settings.keys())
     end
     if settings.clear_empty_lines then
