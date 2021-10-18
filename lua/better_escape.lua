@@ -4,6 +4,7 @@ local settings = {
   timeout = vim.o.timeoutlen,
   mapping = { "jk", "jj" },
   clear_empty_lines = false,
+  keys_before_delete = false,
   keys = "<Esc>", -- function/string
 }
 
@@ -44,13 +45,18 @@ local function feed(keys)
 end
 local function check_timeout()
   if flag then
+    if settings.keys_before_delete then
+      feed(type(settings.keys) == "string" and settings.keys or settings.keys())
+    end
     feed "<BS><BS>" -- delete the characters from the mapping
     -- if keys is string use it, else use it as a function
-    feed(type(settings.keys) == "string" and settings.keys or settings.keys())
+    if not settings.keys_before_delete then
+      feed(type(settings.keys) == "string" and settings.keys or settings.keys())
+    end
     if settings.clear_empty_lines then
       local current_line = vim.api.nvim_get_current_line()
       if string.match(current_line, "^%s+j$") then
-        feed("0D")
+        feed "0D"
       end
     end
   end
@@ -76,7 +82,8 @@ function M.check_charaters()
   then
     --[[
     search for matches of the previous typed char
-    at indices where the second char occurs]]--
+    at indices where the second char occurs]]
+    --
     local indices = get_indices(second_chars, char)
     for _, idx in ipairs(indices) do
       if first_chars[idx] == prev_char then
