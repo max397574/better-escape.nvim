@@ -24,7 +24,7 @@ local function start_timeout()
     timer = nil
   end
   
-  vim.defer_fn(function()
+  timer = vim.defer_fn(function()
     flag = false
     timer = nil
   end, settings.timeout)
