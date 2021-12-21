@@ -1,3 +1,4 @@
+local uv = require'luv'
 local M = {}
 
 local settings = {
@@ -12,11 +13,20 @@ local flag = false
 local previous_chars = {}
 local first_chars = {}
 local second_chars = {}
+local timer = nil
 
 local function start_timeout()
   flag = true
+
+  if timer then
+    uv.stop_timer(timer)
+    uv.close(timer)
+    timer = nil
+  end
+  
   vim.defer_fn(function()
     flag = false
+    timer = nil
   end, settings.timeout)
 end
 
