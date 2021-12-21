@@ -19,11 +19,11 @@ local function start_timeout()
   flag = true
 
   if timer then
-    uv.stop_timer(timer)
+    uv.timer_stop(timer)
     uv.close(timer)
     timer = nil
   end
-  
+
   timer = vim.defer_fn(function()
     flag = false
     timer = nil
