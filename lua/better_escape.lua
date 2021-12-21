@@ -76,25 +76,21 @@ function M.check_charaters()
   table.insert(previous_chars, char)
   local prev_char = previous_chars[#previous_chars - 1] or ""
 
-  if
-    vim.tbl_contains(second_chars, char)
-    and vim.tbl_contains(first_chars, prev_char)
-  then
-    --[[
-    search for matches of the previous typed char
-    at indices where the second char occurs]]
-    --
-    local indices = get_indices(second_chars, char)
-    for _, idx in ipairs(indices) do
-      if first_chars[idx] == prev_char then
-        check_timeout()
-      end
+  local indices = get_indices(second_chars, char)
+  local matched = false
+
+  -- if char == second_chars[idx] and prev_char == first_chars[idx] as well
+  -- then matched = true
+  for _, idx in ipairs(indices) do
+    if first_chars[idx] == prev_char then
+      matched = true
+      check_timeout()
     end
-  else
-    -- if the typed char is first in a mapping, start the timeout
-    if vim.tbl_contains(first_chars, char) then
-      start_timeout()
-    end
+  end
+    
+  -- if can't find a match, and the typed char is first in a mapping, start the timeout
+  if not matched and vim.tbl_contains(first_chars, char) then
+    start_timeout()
   end
 end
 
