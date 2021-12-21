@@ -59,8 +59,10 @@ local function check_timeout()
         feed "0D"
       end
     end
+    previous_chars = {}
+    return true
   end
-  previous_chars = {}
+  return false
 end
 
 local function parse_mapping()
@@ -83,8 +85,7 @@ function M.check_charaters()
   -- then matched = true
   for _, idx in ipairs(indices) do
     if first_chars[idx] == prev_char then
-      matched = true
-      check_timeout()
+      matched = check_timeout()
     end
   end
     
