@@ -3,7 +3,7 @@
 This is a lua version of
 [better_escape.vim](https://github.com/jdhao/better-escape.vim)
 
-A lot of people have mappings like `jk` or `jj` to esacpe insert mode.
+A lot of people have mappings like `jk` or `jj` to escape insert mode.
 The problem with this mappings is that whenever you type a `j`, neovim wait about 100-500ms (depending on your timeoutlen) to see, if you type a `j` or a `k` because these are mapped.
 Only after that time the `j` will be inserted.
 Then you always get a delay when typing a `j`.
@@ -12,16 +12,17 @@ This looks like this (see below for a gif):
 
 ![Screen Shot 2021-10-08 at 16 21 23](https://user-images.githubusercontent.com/81827001/136576543-c8b4e802-84a8-4087-a7a4-f7d069931885.png)
 
-✨Features
---------
-* Escape without getting delay when typing in insert mode
-* Customizable mapping and timeout
-* Use multiple mappings
-* Really small and fast
+## ✨Features
 
-📦Installation
-------------
+- Escape without getting delay when typing in insert mode
+- Customizable mapping and timeout
+- Use multiple mappings
+- Really small and fast
+
+## 📦Installation
+
 Use your favourite package manager and call the setup function.
+
 ```lua
 -- lua with packer.nvim
 use {
@@ -32,8 +33,8 @@ use {
 }
 ```
 
-⚙️Customization
--------------
+## ⚙️Customization
+
 Call the setup function with your options as arguments.
 
 ```lua
@@ -50,15 +51,13 @@ require("better_escape").setup {
 }
 ```
 
-👀Demo
-------
+## 👀Demo
 
 ![mapping](https://user-images.githubusercontent.com/81827001/135870002-07c1dc41-f3e7-4ece-af6f-50e9b0711a66.gif)
 
 ![plugin](https://user-images.githubusercontent.com/81827001/135870101-febf3507-9327-4b80-aa9a-ba08bff6b8d4.gif)
 
-🎓How it works
-----------------
+## 🎓How it works
 
 With the mappings there are two tables created.
 One contains all first characters and one all second characters.
