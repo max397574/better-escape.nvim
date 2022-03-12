@@ -136,4 +136,10 @@ function M.setup(update)
   end
 end
 
-return M
+return setmetatable(M, {
+  __index = function(_, k)
+    if k == "flag" then
+      return flag
+    end
+  end,
+})
