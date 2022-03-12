@@ -11,11 +11,17 @@ local settings = {
   keys = "<Esc>",
 }
 
-local timer
-local flag = false
-local previous_chars = {}
 local first_chars = {}
 local second_chars = {}
+
+---@class State
+---@field char string
+---@field modified boolean
+
+local timer
+local flag = false
+---@type State[]
+local input_states = {}
 
 ---@param tbl table table to search through
 ---@param element any element to search in tbl
@@ -69,7 +75,6 @@ local function check_timeout()
         feed '0"_D'
       end
     end
-    previous_chars = {}
     return true
   end
   return false
@@ -77,18 +82,27 @@ end
 
 function M.check_charaters()
   local char = vim.v.char
+  table.insert(input_states, { char = char, modified = vim.bo.modified })
 
-  table.insert(previous_chars, char)
-  local prev_char = previous_chars[#previous_chars - 1] or ""
-
-  local indices = get_indices(second_chars, char)
   local matched = false
+  if #input_states >= 2 then
+    ---@type State
+    local prev_state = input_states[#input_states - 1]
+    local indices = get_indices(second_chars, char)
+    -- if char == second_chars[idx] and prev_char == first_chars[idx] as well
+    -- then matched = true
+    for _, idx in ipairs(indices) do
+      if first_chars[idx] == prev_state.char then
+        matched = check_timeout()
+        break
+      end
+    end
 
-  -- if char == second_chars[idx] and prev_char == first_chars[idx] as well
-  -- then matched = true
-  for _, idx in ipairs(indices) do
-    if first_chars[idx] == prev_char then
-      matched = check_timeout()
+    if matched then
+      input_states = {}
+      vim.schedule(function()
+        vim.bo.modified = prev_state.modified
+      end)
     end
   end
 
@@ -107,7 +121,7 @@ local function validate_settings()
 
   if settings.timeout then
     assert(type(settings.timeout) == "number", "Timeout must be a number.")
-    assert(settings.timeout >= 1, "Timeout must be a positive number.")
+    assert(settings.timeout >= 50, "Timeout must be greater than 50.")
   end
 
   assert(
