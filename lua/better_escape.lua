@@ -96,29 +96,20 @@ function M.check_charaters()
 end
 
 local function validate_settings()
-  assert(
-    type(settings.mapping) == "table",
-    "Error(better-escape.nvim): Mapping must be a table."
-  )
+  assert(type(settings.mapping) == "table", "Mapping must be a table.")
 
   for _, mapping in ipairs(settings.mapping) do
-    assert(#mapping == 2, "Error(better-escape.nvim): Mapping must be 2 keys.")
+    assert(#mapping == 2, "Mapping must be 2 keys.")
   end
 
   if settings.timeout then
-    assert(
-      type(settings.timeout) == "number",
-      "Error(better-escape.nvim): Timeout must be a number."
-    )
-    assert(
-      settings.timeout >= 1,
-      "Error(better-escape.nvim): Timeout must be a positive number."
-    )
+    assert(type(settings.timeout) == "number", "Timeout must be a number.")
+    assert(settings.timeout >= 1, "Timeout must be a positive number.")
   end
 
   assert(
     vim.tbl_contains({ "string", "function" }, type(settings.keys)),
-    "Error(better-escape.nvim): Keys must be a function or string."
+    "Keys must be a function or string."
   )
 end
 
@@ -138,7 +129,7 @@ function M.setup(update)
 
     vim.cmd [[au InsertCharPre * lua require"better_escape".check_charaters()]]
   else
-    vim.notify(msg, vim.log.levels.ERROR)
+    vim.notify("Error(better-escape.nvim): " .. msg, vim.log.levels.ERROR)
   end
 end
 
