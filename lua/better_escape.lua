@@ -6,7 +6,6 @@ local settings = {
   timeout = vim.o.timeoutlen,
   mapping = { "jk", "jj" },
   clear_empty_lines = false,
-  keys_before_delete = false,
   ---@type string|function
   keys = "<Esc>",
 }
@@ -60,26 +59,21 @@ local function start_timer()
 end
 
 local function get_keys()
+  -- if keys is string use it, else use it as a function
   return type(settings.keys) == "string" and settings.keys or settings.keys()
 end
 
 local function check_timeout()
   if waiting then
-    if settings.keys_before_delete then
-      feed(get_keys())
-    end
-    -- print(api.nvim_get_current_line())
     feed "<BS><BS>" -- delete the characters from the mapping
-    -- if keys is string use it, else use it as a function
-    if not settings.keys_before_delete then
-      feed(get_keys())
-    end
+    feed(get_keys())
     if settings.clear_empty_lines then
       local current_line = api.nvim_get_current_line()
       if string.match(current_line, "^%s+j$") then
         feed '0"_D'
       end
     end
+
     waiting = false -- more timely
     return true
   end
