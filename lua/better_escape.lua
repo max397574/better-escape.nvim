@@ -70,7 +70,9 @@ local function check_timeout()
     if settings.clear_empty_lines then
       local current_line = api.nvim_get_current_line()
       if string.match(current_line, "^%s+j$") then
-        feed '0"_D'
+        vim.schedule(function()
+          feed '0"_D'
+        end)
       end
     end
 
