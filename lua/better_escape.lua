@@ -1,4 +1,3 @@
-local uv = require "luv"
 local M = {}
 
 local settings = {
@@ -9,26 +8,11 @@ local settings = {
   keys = "<Esc>", -- function/string
 }
 
+local timer
 local flag = false
 local previous_chars = {}
 local first_chars = {}
 local second_chars = {}
-local timer = nil
-
-local function start_timeout()
-  flag = true
-
-  if timer then
-    uv.timer_stop(timer)
-    uv.close(timer)
-    timer = nil
-  end
-
-  timer = vim.defer_fn(function()
-    flag = false
-    timer = nil
-  end, settings.timeout)
-end
 
 ---@param tbl table table to search through
 ---@param element any element to search in tbl
@@ -53,6 +37,19 @@ local function feed(keys)
     false
   )
 end
+
+local function start_timeout()
+  flag = true
+
+  if timer then
+    timer:stop()
+  end
+
+  timer = vim.defer_fn(function()
+    flag = false
+  end, settings.timeout)
+end
+
 local function check_timeout()
   if flag then
     if settings.keys_before_delete then
@@ -73,13 +70,6 @@ local function check_timeout()
     return true
   end
   return false
-end
-
-local function parse_mapping()
-  -- if mapping is a string (single mapping) make it a table
-  if type(settings.mapping) == "string" then
-    settings.mapping = { settings.mapping }
-  end
 end
 
 function M.check_charaters()
@@ -133,12 +123,11 @@ local function validate_settings()
 end
 
 function M.setup(update)
-  if vim.g.better_escape_loaded then
-    return
-  end
-  vim.g.better_escape_loaded = true
   settings = vim.tbl_deep_extend("force", settings, update or {})
-  parse_mapping()
+  -- if mapping is a string (single mapping) make it a table
+  if type(settings.mapping) == "string" then
+    settings.mapping = { settings.mapping }
+  end
   local ok, msg = pcall(validate_settings)
   if ok then
     -- create tables with the first and seconds chars of the mappings
