@@ -121,7 +121,7 @@ local function validate_settings()
 
   if settings.timeout then
     assert(type(settings.timeout) == "number", "Timeout must be a number.")
-    assert(settings.timeout >= 50, "Timeout must be greater than 50.")
+    assert(settings.timeout >= 100, "Timeout must be greater than 100.")
   end
 
   assert(
