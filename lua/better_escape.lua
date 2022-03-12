@@ -88,10 +88,6 @@ end
 
 function M.check_charaters()
   local char = vim.v.char
-  -- NOTE: coc feeds <space><bs> to close pum
-  if char == " " and vim.g.coc_disable_space_report == 1 then
-    return
-  end
   table.insert(input_states, { char = char, modified = vim.bo.modified })
 
   local matched = false
