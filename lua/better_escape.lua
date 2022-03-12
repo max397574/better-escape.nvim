@@ -1,11 +1,14 @@
 local M = {}
 
+local api = vim.api
+
 local settings = {
   timeout = vim.o.timeoutlen,
   mapping = { "jk", "jj" },
   clear_empty_lines = false,
   keys_before_delete = false,
-  keys = "<Esc>", -- function/string
+  ---@type string|function
+  keys = "<Esc>",
 }
 
 local timer
@@ -31,8 +34,8 @@ end
 ---@param keys string keys to feed
 --- Replace keys with termcodes and feed them
 local function feed(keys)
-  vim.api.nvim_feedkeys(
-    vim.api.nvim_replace_termcodes(keys, true, true, true),
+  api.nvim_feedkeys(
+    api.nvim_replace_termcodes(keys, true, true, true),
     "n",
     false
   )
@@ -61,7 +64,7 @@ local function check_timeout()
       feed(type(settings.keys) == "string" and settings.keys or settings.keys())
     end
     if settings.clear_empty_lines then
-      local current_line = vim.api.nvim_get_current_line()
+      local current_line = api.nvim_get_current_line()
       if string.match(current_line, "^%s+j$") then
         feed '0"_D'
       end
