@@ -150,6 +150,7 @@ function M.setup(update)
   if ok then
     -- create tables with the first and seconds chars of the mappings
     for _, shortcut in ipairs(settings.mapping) do
+      vim.cmd("silent! iunmap " .. shortcut)
       table.insert(first_chars, (string.sub(shortcut, 1, 1)))
       table.insert(second_chars, (string.sub(shortcut, 2, 2)))
     end
