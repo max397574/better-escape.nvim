@@ -51,6 +51,23 @@ require("better_escape").setup {
 }
 ```
 
+## API
+
+`require("better_escape").flag` is a boolean indicating that it's waiting for
+a mapped sequence to complete.
+
+<details>
+<summary>statusline example</summary>
+
+```lua
+function escape_status()
+  local ok, m = pcall(require, 'better_escape')
+  return ok and m.flag and '✺' or ""
+end
+```
+
+</details>
+
 ## 👀Demo
 
 ![mapping](https://user-images.githubusercontent.com/81827001/135870002-07c1dc41-f3e7-4ece-af6f-50e9b0711a66.gif)
