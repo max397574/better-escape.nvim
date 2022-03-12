@@ -59,15 +59,19 @@ local function start_timeout()
   end, settings.timeout)
 end
 
+local function get_keys()
+  return type(settings.keys) == "string" and settings.keys or settings.keys()
+end
+
 local function check_timeout()
   if flag then
     if settings.keys_before_delete then
-      feed(type(settings.keys) == "string" and settings.keys or settings.keys())
+      feed(get_keys())
     end
     feed "<BS><BS>" -- delete the characters from the mapping
     -- if keys is string use it, else use it as a function
     if not settings.keys_before_delete then
-      feed(type(settings.keys) == "string" and settings.keys or settings.keys())
+      feed(get_keys())
     end
     if settings.clear_empty_lines then
       local current_line = api.nvim_get_current_line()
@@ -75,6 +79,7 @@ local function check_timeout()
         feed '0"_D'
       end
     end
+    flag = false -- more timely
     return true
   end
   return false
@@ -99,7 +104,6 @@ function M.check_charaters()
     end
 
     if matched then
-      flag = false -- more timely
       input_states = {}
       vim.schedule(function()
         vim.bo.modified = prev_state.modified
