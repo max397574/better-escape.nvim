@@ -19,7 +19,7 @@ local second_chars = {}
 ---@field modified boolean
 
 local timer
-local flag = false
+local waiting = false
 ---@type State[]
 local input_states = {}
 
@@ -47,15 +47,15 @@ local function feed(keys)
   )
 end
 
-local function start_timeout()
-  flag = true
+local function start_timer()
+  waiting = true
 
   if timer then
     timer:stop()
   end
 
   timer = vim.defer_fn(function()
-    flag = false
+    waiting = false
   end, settings.timeout)
 end
 
@@ -64,10 +64,11 @@ local function get_keys()
 end
 
 local function check_timeout()
-  if flag then
+  if waiting then
     if settings.keys_before_delete then
       feed(get_keys())
     end
+    -- print(api.nvim_get_current_line())
     feed "<BS><BS>" -- delete the characters from the mapping
     -- if keys is string use it, else use it as a function
     if not settings.keys_before_delete then
@@ -79,7 +80,7 @@ local function check_timeout()
         feed '0"_D'
       end
     end
-    flag = false -- more timely
+    waiting = false -- more timely
     return true
   end
   return false
@@ -87,6 +88,10 @@ end
 
 function M.check_charaters()
   local char = vim.v.char
+  -- NOTE: coc feeds <space><bs> to close pum
+  if char == " " and vim.g.coc_disable_space_report == 1 then
+    return
+  end
   table.insert(input_states, { char = char, modified = vim.bo.modified })
 
   local matched = false
@@ -113,7 +118,7 @@ function M.check_charaters()
 
   -- if can't find a match, and the typed char is first in a mapping, start the timeout
   if not matched and vim.tbl_contains(first_chars, char) then
-    start_timeout()
+    start_timer()
   end
 end
 
@@ -157,8 +162,8 @@ end
 
 return setmetatable(M, {
   __index = function(_, k)
-    if k == "flag" then
-      return flag
+    if k == "waiting" then
+      return waiting
     end
   end,
 })

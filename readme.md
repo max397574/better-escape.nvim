@@ -53,7 +53,7 @@ require("better_escape").setup {
 
 ## API
 
-`require("better_escape").flag` is a boolean indicating that it's waiting for
+`require("better_escape").waiting` is a boolean indicating that it's waiting for
 a mapped sequence to complete.
 
 <details>
@@ -62,7 +62,7 @@ a mapped sequence to complete.
 ```lua
 function escape_status()
   local ok, m = pcall(require, 'better_escape')
-  return ok and m.flag and '✺' or ""
+  return ok and m.waiting and '✺' or ""
 end
 ```
 
