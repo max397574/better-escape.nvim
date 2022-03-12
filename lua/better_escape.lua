@@ -99,6 +99,7 @@ function M.check_charaters()
     end
 
     if matched then
+      flag = false -- more timely
       input_states = {}
       vim.schedule(function()
         vim.bo.modified = prev_state.modified
