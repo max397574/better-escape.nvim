@@ -1,7 +1,7 @@
 # 🚪better-escape.nvim
 
-This is a lua version of
-[better_escape.vim](https://github.com/jdhao/better-escape.vim)
+This plugin is the lua version of [better_escape.vim](https://github.com/jdhao/better-escape.vim),
+with some additional features and optimizations
 
 A lot of people have mappings like `jk` or `jj` to escape insert mode.
 The problem with this mappings is that whenever you type a `j`, neovim wait about 100-500ms (depending on your timeoutlen) to see, if you type a `j` or a `k` because these are mapped.
@@ -44,12 +44,29 @@ require("better_escape").setup {
     timeout = vim.o.timeoutlen, -- the time in which the keys must be hit in ms. Use option timeoutlen by default
     clear_empty_lines = false, -- clear line after escaping if there is only whitespace
     keys = "<Esc>", -- keys used for escaping, if it is a function will use the result everytime
-    -- example
+    -- example(recommended)
     -- keys = function()
-    --   return vim.fn.col '.' - 2 >= 1 and '<esc>l' or '<esc>'
+    --   return vim.api.nvim_win_get_cursor(0)[2] > 1 and '<esc>l' or '<esc>'
     -- end,
 }
 ```
+
+## API
+
+`require("better_escape").waiting` is a boolean indicating that it's waiting for
+a mapped sequence to complete.
+
+<details>
+<summary>statusline example</summary>
+
+```lua
+function escape_status()
+  local ok, m = pcall(require, 'better_escape')
+  return ok and m.waiting and '✺' or ""
+end
+```
+
+</details>
 
 ## 👀Demo
 
