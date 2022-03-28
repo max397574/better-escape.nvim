@@ -147,9 +147,12 @@ function M.setup(update)
             table.insert(second_chars, (string.sub(shortcut, 2, 2)))
         end
 
-        vim.cmd(
-            [[au InsertCharPre * lua require"better_escape".check_charaters()]]
-        )
+        vim.cmd([[
+          augroup better_escape
+          autocmd!
+          autocmd InsertCharPre * lua require"better_escape".check_charaters()
+          augroup END
+        ]])
     else
         vim.notify("Error(better-escape.nvim): " .. msg, vim.log.levels.ERROR)
     end
