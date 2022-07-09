@@ -114,11 +114,17 @@ function M.check_charaters()
     end
 end
 
+local function char_at(str, pos)
+    return vim.fn.nr2char(vim.fn.strgetchar(str, pos))
+end
+
 local function validate_settings()
     assert(type(settings.mapping) == "table", "Mapping must be a table.")
 
     for _, mapping in ipairs(settings.mapping) do
-        assert(#mapping == 2, "Mapping must be 2 keys.")
+        -- replace all multibyte chars to `A` char
+        local length = #vim.fn.substitute(mapping, ".", "A", "g")
+        assert(length == 2, "Mapping must be 2 keys.")
     end
 
     if settings.timeout then
@@ -143,8 +149,8 @@ function M.setup(update)
         -- create tables with the first and seconds chars of the mappings
         for _, shortcut in ipairs(settings.mapping) do
             vim.cmd("silent! iunmap " .. shortcut)
-            table.insert(first_chars, (string.sub(shortcut, 1, 1)))
-            table.insert(second_chars, (string.sub(shortcut, 2, 2)))
+            table.insert(first_chars, char_at(shortcut, 0))
+            table.insert(second_chars, char_at(shortcut, 1))
         end
 
         vim.cmd([[
