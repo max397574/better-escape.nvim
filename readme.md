@@ -89,3 +89,7 @@ If this is the case the two characters get deleted and `keys` get feed or execut
 
 Like this it is possible that the characters really get inserted and therefore you have no delay after typing one of the characters of your mapping.
 With the `timeoutlen` it's still possible to type the characters of your mappings.
+
+## ❤️ Support
+If you like the projects I do and they can help you in your life you can support my work with [github sponsors](https://github.com/sponsors/max397574).
+Every support motivates me to continue working on my open source projects.
