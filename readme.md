@@ -14,6 +14,10 @@ This looks like this (see below for a gif):
 
 ## ✨Features
 
+> [!CAUTION]
+> Mappings configured with this plugin do not work with **macros**.
+> Use `<Esc>` to exit insert mode when recording macros instead.
+
 - Escape without getting delay when typing in insert mode
 - Customizable mapping and timeout
 - Use multiple mappings
