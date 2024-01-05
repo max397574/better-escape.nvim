@@ -38,10 +38,10 @@ end
 
 ---@param keys string keys to feed
 --- Replace keys with termcodes and feed them
-local function feed(keys)
+local function feed(keys,mode)
     api.nvim_feedkeys(
         api.nvim_replace_termcodes(keys, true, true, true),
-        "n",
+        mode or "n",
         false
     )
 end
@@ -65,15 +65,14 @@ end
 
 local function check_timeout()
     if waiting then
-        feed("<BS><BS>") -- delete the characters from the mapping
-        feed(get_keys())
         if settings.clear_empty_lines then
             local current_line = api.nvim_get_current_line()
             if string.match(current_line, "^%s+j$") then
-                vim.schedule(function()
-                    feed('0"_D')
-                end)
+                api.nvim_set_current_line('')
             end
+            feed(get_keys(),"in")
+        else
+            feed("<BS><BS>" .. get_keys(),"in") -- delete the characters from the mapping
         end
 
         waiting = false -- more timely
