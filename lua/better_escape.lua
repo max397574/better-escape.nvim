@@ -67,8 +67,10 @@ local function check_timeout()
     if waiting then
         local current_line = api.nvim_get_current_line()
         if settings.clear_empty_lines and current_line:match("^%s+j$") then
-            api.nvim_set_current_line("")
-            feed(get_keys(), "in")
+            vim.schedule(function()
+                api.nvim_set_current_line("")
+                feed(get_keys(), "in")
+            end)
         else
             feed("<BS><BS>" .. get_keys(), "in") -- delete the characters from the mapping
         end
