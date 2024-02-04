@@ -4,7 +4,7 @@ This plugin is the lua version of [better_escape.vim](https://github.com/jdhao/b
 with some additional features and optimizations
 
 A lot of people have mappings like `jk` or `jj` to escape insert mode.
-The problem with this mappings is that whenever you type a `j`, neovim wait about 100-500ms (depending on your timeoutlen) to see, if you type a `j` or a `k` because these are mapped.
+The problem with this mappings is that whenever you type a `j`, neovim waits about 100-500ms (depending on your timeoutlen) to see, if you type a `j` or a `k` because these are mapped.
 Only after that time the `j` will be inserted.
 Then you always get a delay when typing a `j`.
 
@@ -40,34 +40,20 @@ Call the setup function with your options as arguments.
 ```lua
 -- lua, default settings
 require("better_escape").setup {
-    mapping = {"jk", "jj"}, -- a table with mappings to use
-    timeout = vim.o.timeoutlen, -- the time in which the keys must be hit in ms. Use option timeoutlen by default
-    clear_empty_lines = false, -- clear line after escaping if there is only whitespace
-    keys = "<Esc>", -- keys used for escaping, if it is a function will use the result everytime
-    -- example(recommended)
-    -- keys = function()
-    --   return vim.api.nvim_win_get_cursor(0)[2] > 1 and '<esc>l' or '<esc>'
-    -- end,
+    -- the time in which the keys must be hit in ms. Use option timeoutlen by default
+    timeout = vim.o.timeoutlen,
+    mappings = {
+        i = {
+            j = {
+                k = "<Esc>",
+                j = "<Esc>",
+            },
+        },
+    },
+    -- clear line after escaping if there is only whitespace
+    clear_empty_lines = false,
 }
 ```
-
-## API
-
-`require("better_escape").waiting` is a boolean indicating that it's waiting for
-a mapped sequence to complete.
-
-<details>
-<summary>statusline example</summary>
-
-```lua
-function escape_status()
-  local ok, m = pcall(require, 'better_escape')
-  return ok and m.waiting and '✺' or ""
-end
-```
-
-</details>
-
 ## 👀Demo
 
 ![mapping](https://user-images.githubusercontent.com/81827001/135870002-07c1dc41-f3e7-4ece-af6f-50e9b0711a66.gif)
