@@ -17,6 +17,7 @@ local settings = {
 }
 
 local created_mappings = {}
+
 local function clear_mappings()
     for _, key in ipairs(created_mappings) do
         pcall(vim.keymap.del, "i", key)
@@ -44,6 +45,8 @@ local function check_charatcers()
                 pcall(vim.keymap.del, "i", key)
             end, settings.timeout)
         end
+    else
+        clear_mappings()
     end
 end
 
