@@ -1,175 +1,171 @@
 local M = {}
-
-local api = vim.api
+local uv = vim.uv
 
 local settings = {
     timeout = vim.o.timeoutlen,
-    mapping = { "jk", "jj" },
+    -- deprecated
+    -- mapping = nil,
+    mappings = {
+        i = {
+            j = {
+                k = "<Esc>",
+                j = "<Esc>",
+            },
+        },
+        c = {
+            j = {
+                k = "<Esc>",
+                j = "<Esc>",
+            },
+        },
+        t = {
+            j = {
+                k = "<Esc>",
+                j = "<Esc>"
+            },
+        },
+        v = {
+            j = {
+                k = "<Esc>",
+                -- WIP: is this a good idea for visual mode?
+                --    j = "<Esc>",
+            },
+        },
+        s = {
+            j = {
+                k = "<Esc>",
+            },
+        },
+        n = {
+            j = {
+                k = "<Esc>",
+            },
+        },
+    },
+    -- WIP: still not added in the pr,
+    -- i feel like this option should be removed and a method to get the behaviour with the old should be added to the readme
     clear_empty_lines = false,
+    -- deprecated
     ---@type string|function
-    keys = "<Esc>",
+    -- keys = "<Esc>",
 }
 
-local first_chars = {}
-local second_chars = {}
-
----@class State
----@field char string
----@field modified boolean
-
-local timer
-local waiting = false
----@type State[]
-local input_states = {}
-
----@param tbl table table to search through
----@param element any element to search in tbl
----@return table indices
---- Search for indices in tbl where element occurs
-local function get_indices(tbl, element)
-    local indices = {}
-    for idx, value in ipairs(tbl) do
-        if element == value then
-            table.insert(indices, idx)
-        end
-    end
-    return indices
-end
-
----@param keys string keys to feed
---- Replace keys with termcodes and feed them
-local function feed(keys, mode)
-    api.nvim_feedkeys(
-        api.nvim_replace_termcodes(keys, true, true, true),
-        mode or "n",
-        false
-    )
-end
-
-local function start_timer()
-    waiting = true
-
-    if timer then
-        timer:stop()
-    end
-
-    timer = vim.defer_fn(function()
-        waiting = false
-    end, settings.timeout)
-end
-
-local function get_keys()
-    -- if keys is string use it, else use it as a function
-    return type(settings.keys) == "string" and settings.keys or settings.keys()
-end
-
-local function check_timeout()
-    if waiting then
-        local current_line = api.nvim_get_current_line()
-        if settings.clear_empty_lines and current_line:match("^%s+j$") then
-            vim.schedule(function()
-                api.nvim_set_current_line("")
-                feed(get_keys(), "in")
-            end)
-        else
-            feed("<BS><BS>" .. get_keys(), "in") -- delete the characters from the mapping
-        end
-
-        waiting = false -- more timely
-        return true
-    end
-    return false
-end
-
-function M.check_charaters()
-    local char = vim.v.char
-    table.insert(input_states, { char = char, modified = vim.bo.modified })
-
-    local matched = false
-    if #input_states >= 2 then
-        ---@type State
-        local prev_state = input_states[#input_states - 1]
-        local indices = get_indices(second_chars, char)
-        -- if char == second_chars[idx] and prev_char == first_chars[idx] as well
-        -- then matched = true
-        for _, idx in ipairs(indices) do
-            if first_chars[idx] == prev_state.char then
-                matched = check_timeout()
-                break
+local function clear_mappings()
+    for mode, keys in pairs(settings.mappings) do
+        for key, subkeys in pairs(keys) do
+            vim.keymap.del(mode, key)
+            for subkey, _ in pairs(subkeys) do
+                vim.keymap.del(mode, subkey)
             end
         end
+    end
+end
 
-        if matched then
-            input_states = {}
-            vim.schedule(function()
-                vim.bo.modified = prev_state.modified
-            end)
+-- WIP: move this into recorder.lua ?
+local last_key = nil
+local bufmodified = false
+local sequence_timer = uv.new_timer()
+local function log_key(key)
+    bufmodified = vim.bo.modified
+    last_key = key
+    sequence_timer:stop()
+    sequence_timer:start(settings.timeout, 0, function()
+        if last_key == key then
+            last_key = nil
         end
-    end
-
-    -- if can't find a match, and the typed char is first in a mapping, start the timeout
-    if not matched and vim.tbl_contains(first_chars, char) then
-        start_timer()
-    end
+    end)
 end
-
-local function char_at(str, pos)
-    return vim.fn.nr2char(vim.fn.strgetchar(str, pos))
-end
-
-local function validate_settings()
-    assert(type(settings.mapping) == "table", "Mapping must be a table.")
-
-    for _, mapping in ipairs(settings.mapping) do
-        -- replace all multibyte chars to `A` char
-        local length = #vim.fn.substitute(mapping, ".", "A", "g")
-        assert(length == 2, "Mapping must be 2 keys.")
+local sequence_started = false
+vim.on_key(function()
+    -- on_key runs after the mappings are evaluated (after exiting to normal mode)
+    -- any key after a key that starts the sequence is either a sub key or a normal key
+    -- in which case the sequence would have to end by setting last_key to nil
+    if sequence_started then
+        sequence_started = false
+        last_key = nil
+        return
     end
+    sequence_started = last_key ~= nil
+end)
 
-    if settings.timeout then
-        assert(type(settings.timeout) == "number", "Timeout must be a number.")
-        assert(
-            settings.timeout >= 100,
-            "Timeout must be greater than or equal to 100."
-        )
+-- list of modes that press <backspace> when escaping
+local undo_key = {
+    i = "<bs>",
+    c = "<bs>",
+    t = "<bs>",
+    v = "",
+    n = "",
+    s = "",
+    o = "",
+}
+
+local function map_keys()
+    for mode, keys in pairs(settings.mappings) do
+        local map_opts = { expr = true }
+        if mode == 'o' then
+            -- WIP: got any ideas?
+            -- i can't just map keys because you can't easily undo every motion i think
+            -- and you can't press 2 operators at the same time you would have to leave operator pending mode
+            vim.notify(
+                "[better-escape.nvim]: operator-pending mode is not supported yet as it needs discussion",
+                vim.log.levels.WARN,
+                {}
+            )
+            goto continue
+        end
+        for key, subkeys in pairs(keys) do
+            vim.keymap.set(mode, key, function()
+                log_key(key)
+                return key
+            end, map_opts)
+            for subkey, mapping in pairs(subkeys) do
+                vim.keymap.set(mode, subkey, function()
+                    -- In case the subkey happens to also be a starting key
+                    if last_key == nil then
+                        log_key(subkey)
+                        return subkey
+                    end
+                    -- Make sure we are in the correct sequence
+                    if last_key ~= key then
+                        return subkey
+                    end
+                    vim.api.nvim_input(undo_key[mode] or "")
+                    vim.api.nvim_input(("<cmd>setlocal %smodified<cr>"):format(bufmodified and "" or "no"))
+                    if type(mapping) == "string" then
+                        vim.api.nvim_input(mapping)
+                    else
+                        local user_keys = mapping()
+                        if type(user_keys) == 'string' then
+                            vim.api.nvim_input(user_keys)
+                        end
+                    end
+                end, map_opts)
+            end
+        end
+        ::continue::
     end
-
-    assert(
-        vim.tbl_contains({ "string", "function" }, type(settings.keys)),
-        "Keys must be a function or string."
-    )
 end
 
 function M.setup(update)
     settings = vim.tbl_deep_extend("force", settings, update or {})
-    -- if mapping is a string (single mapping) make it a table
-    if type(settings.mapping) == "string" then
-        settings.mapping = { settings.mapping }
-    end
-    local ok, msg = pcall(validate_settings)
-    if ok then
-        -- create tables with the first and seconds chars of the mappings
-        for _, shortcut in ipairs(settings.mapping) do
-            vim.cmd("silent! iunmap " .. shortcut)
-            table.insert(first_chars, char_at(shortcut, 0))
-            table.insert(second_chars, char_at(shortcut, 1))
+    if settings.mapping then
+        vim.notify(
+            "[better-escape.nvim]: config.mapping is deprecated, use config.mappings instead (check readme)",
+            vim.log.levels.WARN,
+            {}
+        )
+        if type(settings.mapping) == "string" then
+            settings.mapping = { settings.mapping }
         end
-
-        vim.cmd([[
-          augroup better_escape
-          autocmd!
-          autocmd InsertCharPre * lua require"better_escape".check_charaters()
-          augroup END
-        ]])
-    else
-        vim.notify("Error(better-escape.nvim): " .. msg, vim.log.levels.ERROR)
+        for _, mapping in ipairs(settings.mappings) do
+            settings.mappings.i[mapping:sub(1, 2)] = {}
+            settings.mappings.i[mapping:sub(1, 1)][mapping:sub(2, 2)] =
+                settings.keys
+        end
     end
+    pcall(clear_mappings)
+    map_keys()
 end
 
-return setmetatable(M, {
-    __index = function(_, k)
-        if k == "waiting" then
-            return waiting
-        end
-    end,
-})
+return M
+
