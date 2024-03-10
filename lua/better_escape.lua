@@ -21,7 +21,7 @@ local settings = {
         t = {
             j = {
                 k = "<Esc>",
-                j = "<Esc>"
+                j = "<Esc>",
             },
         },
         v = {
@@ -102,7 +102,7 @@ local undo_key = {
 local function map_keys()
     for mode, keys in pairs(settings.mappings) do
         local map_opts = { expr = true }
-        if mode == 'o' then
+        if mode == "o" then
             -- WIP: got any ideas?
             -- i can't just map keys because you can't easily undo every motion i think
             -- and you can't press 2 operators at the same time you would have to leave operator pending mode
@@ -130,12 +130,16 @@ local function map_keys()
                         return subkey
                     end
                     vim.api.nvim_input(undo_key[mode] or "")
-                    vim.api.nvim_input(("<cmd>setlocal %smodified<cr>"):format(bufmodified and "" or "no"))
+                    vim.api.nvim_input(
+                        ("<cmd>setlocal %smodified<cr>"):format(
+                            bufmodified and "" or "no"
+                        )
+                    )
                     if type(mapping) == "string" then
                         vim.api.nvim_input(mapping)
                     else
                         local user_keys = mapping()
-                        if type(user_keys) == 'string' then
+                        if type(user_keys) == "string" then
                             vim.api.nvim_input(user_keys)
                         end
                     end
@@ -168,4 +172,3 @@ function M.setup(update)
 end
 
 return M
-
