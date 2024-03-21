@@ -65,9 +65,11 @@ end
 local last_key = nil
 local bufmodified = false
 local sequence_timer = uv.new_timer()
+local recorded_key = false
 local function log_key(key)
     bufmodified = vim.bo.modified
     last_key = key
+    recorded_key = true
     sequence_timer:stop()
     sequence_timer:start(settings.timeout, 0, function()
         if last_key == key then
@@ -75,17 +77,14 @@ local function log_key(key)
         end
     end)
 end
-local sequence_started = false
+
 vim.on_key(function()
-    -- on_key runs after the mappings are evaluated (after exiting to normal mode)
-    -- any key after a key that starts the sequence is either a sub key or a normal key
-    -- in which case the sequence would have to end by setting last_key to nil
-    if sequence_started then
-        sequence_started = false
-        last_key = nil
+    if recorded_key then
+        recorded_key  = false
         return
     end
-    sequence_started = last_key ~= nil
+    -- make sure to only store a sequence when a key is actually pressed
+    last_key = nil
 end)
 
 -- list of modes that press <backspace> when escaping
@@ -98,8 +97,9 @@ local undo_key = {
     s = "",
     o = "",
 }
-
+local parent_keys = {}
 local function map_keys()
+    parent_keys = {}
     for mode, keys in pairs(settings.mappings) do
         local map_opts = { expr = true }
         if mode == "o" then
@@ -119,6 +119,13 @@ local function map_keys()
                 return key
             end, map_opts)
             for subkey, mapping in pairs(subkeys) do
+                if not parent_keys[mode] then
+                    parent_keys[mode] = {}
+                end
+                if not parent_keys[mode][subkey] then
+                    parent_keys[mode][subkey] = {}
+                end
+                parent_keys[mode][subkey][key] = true
                 vim.keymap.set(mode, subkey, function()
                     -- In case the subkey happens to also be a starting key
                     if last_key == nil then
@@ -126,7 +133,7 @@ local function map_keys()
                         return subkey
                     end
                     -- Make sure we are in the correct sequence
-                    if last_key ~= key then
+                    if not parent_keys[mode][subkey][last_key] then
                         return subkey
                     end
                     vim.api.nvim_input(undo_key[mode] or "")
