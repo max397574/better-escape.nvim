@@ -3,8 +3,6 @@ local uv = vim.uv
 
 local settings = {
     timeout = vim.o.timeoutlen,
-    -- deprecated
-    -- mapping = nil,
     mappings = {
         i = {
             j = {
@@ -27,8 +25,6 @@ local settings = {
         v = {
             j = {
                 k = "<Esc>",
-                -- WIP: is this a good idea for visual mode?
-                --    j = "<Esc>",
             },
         },
         s = {
@@ -36,18 +32,7 @@ local settings = {
                 k = "<Esc>",
             },
         },
-        n = {
-            j = {
-                k = "<Esc>",
-            },
-        },
     },
-    -- WIP: still not added in the pr,
-    -- i feel like this option should be removed and a method to get the behaviour with the old should be added to the readme
-    clear_empty_lines = false,
-    -- deprecated
-    ---@type string|function
-    -- keys = "<Esc>",
 }
 
 local function clear_mappings()
@@ -80,7 +65,7 @@ end
 
 vim.on_key(function()
     if recorded_key then
-        recorded_key  = false
+        recorded_key = false
         return
     end
     -- make sure to only store a sequence when a key is actually pressed
@@ -93,26 +78,13 @@ local undo_key = {
     c = "<bs>",
     t = "<bs>",
     v = "",
-    n = "",
     s = "",
-    o = "",
 }
 local parent_keys = {}
 local function map_keys()
     parent_keys = {}
     for mode, keys in pairs(settings.mappings) do
-        local map_opts = { expr = true }
-        if mode == "o" then
-            -- WIP: got any ideas?
-            -- i can't just map keys because you can't easily undo every motion i think
-            -- and you can't press 2 operators at the same time you would have to leave operator pending mode
-            vim.notify(
-                "[better-escape.nvim]: operator-pending mode is not supported yet as it needs discussion",
-                vim.log.levels.WARN,
-                {}
-            )
-            goto continue
-        end
+        local map_opts = { expr = true, nowait = true }
         for key, subkeys in pairs(keys) do
             vim.keymap.set(mode, key, function()
                 log_key(key)
@@ -144,16 +116,12 @@ local function map_keys()
                     )
                     if type(mapping) == "string" then
                         vim.api.nvim_input(mapping)
-                    else
-                        local user_keys = mapping()
-                        if type(user_keys) == "string" then
-                            vim.api.nvim_input(user_keys)
-                        end
+                    elseif type(mapping) == "function" then
+                        mapping()
                     end
                 end, map_opts)
             end
         end
-        ::continue::
     end
 end
 
