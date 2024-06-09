@@ -59,6 +59,25 @@ end
 
 Call the setup function with your options as arguments.
 
+After the rewrite you can also use any function.
+So you could for example map `<space><tab>` to jump with luasnip like this:
+```lua
+i = {
+    [" "] = {
+        ["<tab>"] = function()
+            -- Defer execution to avoid side-effects
+            vim.defer_fn(function()
+                -- set undo point
+                vim.o.ul = vim.o.ul
+                require("luasnip").expand_or_jump()
+            end, 1)
+        end
+    }
+}
+```
+
+To disable keys set them to `false` in the configuration.
+
 <details>
 <summary>Default Config</summary>
 

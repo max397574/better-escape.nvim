@@ -95,35 +95,40 @@ local function map_keys()
                 return key
             end, map_opts)
             for subkey, mapping in pairs(subkeys) do
-                if not parent_keys[mode] then
-                    parent_keys[mode] = {}
-                end
-                if not parent_keys[mode][subkey] then
-                    parent_keys[mode][subkey] = {}
-                end
-                parent_keys[mode][subkey][key] = true
-                vim.keymap.set(mode, subkey, function()
-                    -- In case the subkey happens to also be a starting key
-                    if last_key == nil then
-                        log_key(subkey)
-                        return subkey
+                if mapping then
+                    if not parent_keys[mode] then
+                        parent_keys[mode] = {}
                     end
-                    -- Make sure we are in the correct sequence
-                    if not parent_keys[mode][subkey][last_key] then
-                        return subkey
+                    if not parent_keys[mode][subkey] then
+                        parent_keys[mode][subkey] = {}
                     end
-                    vim.api.nvim_input(undo_key[mode] or "")
-                    vim.api.nvim_input(
-                        ("<cmd>setlocal %smodified<cr>"):format(
-                            bufmodified and "" or "no"
+                    parent_keys[mode][subkey][key] = true
+                    vim.keymap.set(mode, subkey, function()
+                        if not mapping then
+                            return
+                        end
+                        -- In case the subkey happens to also be a starting key
+                        if last_key == nil then
+                            log_key(subkey)
+                            return subkey
+                        end
+                        -- Make sure we are in the correct sequence
+                        if not parent_keys[mode][subkey][last_key] then
+                            return subkey
+                        end
+                        vim.api.nvim_input(undo_key[mode] or "")
+                        vim.api.nvim_input(
+                            ("<cmd>setlocal %smodified<cr>"):format(
+                                bufmodified and "" or "no"
+                            )
                         )
-                    )
-                    if type(mapping) == "string" then
-                        vim.api.nvim_input(mapping)
-                    elseif type(mapping) == "function" then
-                        mapping()
-                    end
-                end, map_opts)
+                        if type(mapping) == "string" then
+                            vim.api.nvim_input(mapping)
+                        elseif type(mapping) == "function" then
+                            mapping()
+                        end
+                    end, map_opts)
+                end
             end
         end
     end
