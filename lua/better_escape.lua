@@ -1,6 +1,8 @@
 local M = {}
 local uv = vim.uv
 
+M.waiting = false
+
 local settings = {
     timeout = vim.o.timeoutlen,
     mappings = {
@@ -56,7 +58,9 @@ local function log_key(key)
     last_key = key
     recorded_key = true
     sequence_timer:stop()
+    M.waiting = true
     sequence_timer:start(settings.timeout, 0, function()
+        M.waiting = false
         if last_key == key then
             last_key = nil
         end
@@ -127,9 +131,16 @@ end
 
 function M.setup(update)
     settings = vim.tbl_deep_extend("force", settings, update or {})
+    if settings.keys or settings.clear_empty_lines then
+        vim.notify(
+            "[better-escape.nvim]: Rewrite! Check: https://github.com/max397574/better-escape.nvim",
+            vim.log.levels.WARN,
+            {}
+        )
+    end
     if settings.mapping then
         vim.notify(
-            "[better-escape.nvim]: config.mapping is deprecated, use config.mappings instead (check readme)",
+            "[better-escape.nvim]: Rewrite! Check: https://github.com/max397574/better-escape.nvim",
             vim.log.levels.WARN,
             {}
         )
