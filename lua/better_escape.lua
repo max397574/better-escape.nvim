@@ -88,7 +88,7 @@ local parent_keys = {}
 local function map_keys()
     parent_keys = {}
     for mode, keys in pairs(settings.mappings) do
-        local map_opts = { expr = true, nowait = true }
+        local map_opts = { expr = true }
         for key, subkeys in pairs(keys) do
             vim.keymap.set(mode, key, function()
                 log_key(key)
