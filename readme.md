@@ -14,8 +14,9 @@ This looks like this (see below for a gif):
 
 ## ✨Features
 
-- Escape without getting delay when typing in insert mode
-- Customizable mapping and timeout
+- Escape without getting delay when typing from different modes
+- Customizable timeout
+- Map key sequences and lua functions
 - Use multiple mappings
 - Really small and fast
 
@@ -33,23 +34,72 @@ use {
 }
 ```
 
+## ❗Rewrite
+There was a big rewrite which allows much more flexibility now.
+You can now define mappings in most modes and also use functions.
+
+The biggest change was that the `mapping` config option was removed.
+Check the default configuration below to see the new structure.
+
+This also deprecated the `clear_empty_lines` setting.
+You can replicate this behavior with a function like this:
+```lua
+k = function()
+    vim.api.nvim_input("<esc>")
+    local current_line = vim.api.nvim_get_current_line()
+    if current_line:match("^%s+j$") then
+        vim.schedule(function()
+            vim.api.nvim_set_current_line("")
+        end
+    end
+end
+```
+
 ## ⚙️Customization
 
 Call the setup function with your options as arguments.
 
+<details>
+<summary>Default Config</summary>
+
 ```lua
 -- lua, default settings
 require("better_escape").setup {
-    mapping = {"jk", "jj"}, -- a table with mappings to use
-    timeout = vim.o.timeoutlen, -- the time in which the keys must be hit in ms. Use option timeoutlen by default
-    clear_empty_lines = false, -- clear line after escaping if there is only whitespace
-    keys = "<Esc>", -- keys used for escaping, if it is a function will use the result everytime
-    -- example(recommended)
-    -- keys = function()
-    --   return vim.api.nvim_win_get_cursor(0)[2] > 1 and '<esc>l' or '<esc>'
-    -- end,
+    timeout = vim.o.timeoutlen,
+    mappings = {
+        i = {
+            j = {
+                -- These can all also be functions
+                k = "<Esc>",
+                j = "<Esc>",
+            },
+        },
+        c = {
+            j = {
+                k = "<Esc>",
+                j = "<Esc>",
+            },
+        },
+        t = {
+            j = {
+                k = "<Esc>",
+                j = "<Esc>",
+            },
+        },
+        v = {
+            j = {
+                k = "<Esc>",
+            },
+        },
+        s = {
+            j = {
+                k = "<Esc>",
+            },
+        },
+    },
 }
 ```
+<details>
 
 ## API
 
@@ -73,22 +123,6 @@ end
 ![mapping](https://user-images.githubusercontent.com/81827001/135870002-07c1dc41-f3e7-4ece-af6f-50e9b0711a66.gif)
 
 ![plugin](https://user-images.githubusercontent.com/81827001/135870101-febf3507-9327-4b80-aa9a-ba08bff6b8d4.gif)
-
-## 🎓How it works
-
-With the mappings there are two tables created.
-One contains all first characters and one all second characters.
-Whenever you type a character the plugin checks if it's in any of the two tables
-If it is in the first one, the plugin starts a timer.
-If it is in the second, the plugin checks whether the character you typed before is in the table with the first characters.
-
-If this is the case the plugin gets all the indices where the characters are in the tables, then is searches for matches.
-If there is a match, that means that there is a mapping which has the typed character as second and the previous typed character as first character.
-The plugin then checks if the time passed since the first character was types is smaller than `timoutlen`.
-If this is the case the two characters get deleted and `keys` get feed or executed.
-
-Like this it is possible that the characters really get inserted and therefore you have no delay after typing one of the characters of your mapping.
-With the `timeoutlen` it's still possible to type the characters of your mappings.
 
 ## ❤️ Support
 If you like the projects I do and they can help you in your life you can support my work with [github sponsors](https://github.com/sponsors/max397574).
