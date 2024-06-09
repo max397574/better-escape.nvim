@@ -1,5 +1,6 @@
 local M = {}
 local uv = vim.uv
+local t = vim.keycode
 
 M.waiting = false
 
@@ -67,12 +68,14 @@ local function log_key(key)
     end)
 end
 
-vim.on_key(function()
+vim.on_key(function(mappings, typed)
+    if typed == "" then
+        return
+    end
     if recorded_key then
         recorded_key = false
         return
     end
-    -- make sure to only store a sequence when a key is actually pressed
     last_key = nil
 end)
 
@@ -85,15 +88,15 @@ local undo_key = {
     s = "",
 }
 local parent_keys = {}
+
 local function map_keys()
     parent_keys = {}
     for mode, keys in pairs(settings.mappings) do
-        local map_opts = { expr = true }
         for key, subkeys in pairs(keys) do
             vim.keymap.set(mode, key, function()
                 log_key(key)
-                return key
-            end, map_opts)
+                vim.api.nvim_feedkeys(t(key), "in", false)
+            end)
             for subkey, mapping in pairs(subkeys) do
                 if mapping then
                     if not parent_keys[mode] then
@@ -104,30 +107,29 @@ local function map_keys()
                     end
                     parent_keys[mode][subkey][key] = true
                     vim.keymap.set(mode, subkey, function()
-                        if not mapping then
-                            return
-                        end
                         -- In case the subkey happens to also be a starting key
                         if last_key == nil then
                             log_key(subkey)
-                            return subkey
+                            vim.api.nvim_feedkeys(t(subkey), "in", false)
+                            return 
                         end
                         -- Make sure we are in the correct sequence
                         if not parent_keys[mode][subkey][last_key] then
-                            return subkey
+                            vim.api.nvim_feedkeys(t(subkey), "in", false)
+                            return 
                         end
-                        vim.api.nvim_input(undo_key[mode] or "")
-                        vim.api.nvim_input(
-                            ("<cmd>setlocal %smodified<cr>"):format(
+                        vim.api.nvim_feedkeys(t(undo_key[mode] or ""), "in", false)
+                        vim.api.nvim_feedkeys(
+                            t("<cmd>setlocal %smodified<cr>"):format(
                                 bufmodified and "" or "no"
                             )
-                        )
+                        , "in", false)
                         if type(mapping) == "string" then
                             vim.api.nvim_input(mapping)
                         elseif type(mapping) == "function" then
                             mapping()
                         end
-                    end, map_opts)
+                    end)
                 end
             end
         end
