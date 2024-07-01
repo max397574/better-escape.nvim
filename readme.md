@@ -1,20 +1,16 @@
-# 🚪better-escape.nvim
+# better-escape.nvim
 
-This plugin is the lua version of [better_escape.vim](https://github.com/jdhao/better-escape.vim),
-with some additional features and optimizations
+![better-escape](https://github.com/max397574/better-escape.nvim/assets/81827001/8863a620-b075-4417-92d0-7eb2d2646186)
 
-A lot of people have mappings like `jk` or `jj` to escape insert mode.
-The problem with this mappings is that whenever you type a `j`, neovim wait about 100-500ms (depending on your timeoutlen) to see, if you type a `j` or a `k` because these are mapped.
-Only after that time the `j` will be inserted.
-Then you always get a delay when typing a `j`.
-
-This looks like this (see below for a gif):
-
-![Screen Shot 2021-10-08 at 16 21 23](https://user-images.githubusercontent.com/81827001/136576543-c8b4e802-84a8-4087-a7a4-f7d069931885.png)
+A lot of people have mappings like `jk` or `jj` to escape insert mode. The
+problem with this mappings is that whenever you type a `j`, neovim wait about
+100-500ms (depending on your timeoutlen) to see, if you type a `j` or a `k`
+because these are mapped. Only after that time the `j` will be inserted. Then
+you always get a delay when typing a `j`.
 
 ## ✨Features
 
-- Escape without getting delay when typing from different modes
+- Write mappings in many modes without having a delay when typing
 - Customizable timeout
 - Map key sequences and lua functions
 - Use multiple mappings
@@ -25,8 +21,8 @@ This looks like this (see below for a gif):
 Use your favourite package manager and call the setup function.
 
 ```lua
--- lua with packer.nvim
-use {
+-- lua with lazy.nvim
+{
   "max397574/better-escape.nvim",
   config = function()
     require("better_escape").setup()
@@ -35,14 +31,16 @@ use {
 ```
 
 ## ❗Rewrite
-There was a big rewrite which allows much more flexibility now.
-You can now define mappings in most modes and also use functions.
 
-The biggest change was that the `mapping` config option was removed.
-Check the default configuration below to see the new structure.
+There was a big rewrite which allows much more flexibility now. You can now
+define mappings in most modes and also use functions.
 
-This also deprecated the `clear_empty_lines` setting.
-You can replicate this behavior with a function like this:
+The biggest change was that the `mapping` config option was removed. Check the
+default configuration below to see the new structure.
+
+This also deprecated the `clear_empty_lines` setting. You can replicate this
+behavior with a function like this:
+
 ```lua
 k = function()
     vim.api.nvim_input("<esc>")
@@ -57,8 +55,9 @@ end
 
 Call the setup function with your options as arguments.
 
-After the rewrite you can also use any function.
-So you could for example map `<space><tab>` to jump with luasnip like this:
+After the rewrite you can also use any function. So you could for example map
+`<space><tab>` to jump with luasnip like this:
+
 ```lua
 i = {
     [" "] = {
@@ -116,6 +115,7 @@ require("better_escape").setup {
     },
 }
 ```
+
 <details>
 
 ## API
@@ -124,7 +124,7 @@ require("better_escape").setup {
 a mapped sequence to complete.
 
 <details>
-<summary>statusline example</summary>
+<summary>Statusline example</summary>
 
 ```lua
 function escape_status()
@@ -135,12 +135,15 @@ end
 
 </details>
 
-## 👀Demo
-
-![mapping](https://user-images.githubusercontent.com/81827001/135870002-07c1dc41-f3e7-4ece-af6f-50e9b0711a66.gif)
-
-![plugin](https://user-images.githubusercontent.com/81827001/135870101-febf3507-9327-4b80-aa9a-ba08bff6b8d4.gif)
-
 ## ❤️ Support
-If you like the projects I do and they can help you in your life you can support my work with [github sponsors](https://github.com/sponsors/max397574).
-Every support motivates me to continue working on my open source projects.
+
+If you like the projects I do and they can help you in your life you can support
+my work with [github sponsors](https://github.com/sponsors/max397574). Every
+support motivates me to continue working on my open source projects.
+
+## Similar plugins
+
+The old version of this plugin was a lua version of
+[better_escape.vim](https://github.com/jdhao/better-escape.vim), with some
+additional features and optimizations. This changed with the rewrite though. Now
+it has much more features.
