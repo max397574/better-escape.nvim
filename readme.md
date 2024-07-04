@@ -122,7 +122,7 @@ require("better_escape").setup {
 }
 ```
 
-<details>
+</details>
 
 ## API
 
