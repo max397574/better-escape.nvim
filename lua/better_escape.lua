@@ -1,6 +1,12 @@
 local M = {}
 local uv = vim.uv
-local t = vim.keycode
+local function t(str)
+    if vim.keycode then
+        return vim.keycode(str)
+    else
+        return vim.api.nvim_replace_termcodes(str, true, true, true)
+    end
+end
 
 M.waiting = false
 
@@ -111,19 +117,25 @@ local function map_keys()
                         if last_key == nil then
                             log_key(subkey)
                             vim.api.nvim_feedkeys(t(subkey), "in", false)
-                            return 
+                            return
                         end
                         -- Make sure we are in the correct sequence
                         if not parent_keys[mode][subkey][last_key] then
                             vim.api.nvim_feedkeys(t(subkey), "in", false)
-                            return 
+                            return
                         end
-                        vim.api.nvim_feedkeys(t(undo_key[mode] or ""), "in", false)
+                        vim.api.nvim_feedkeys(
+                            t(undo_key[mode] or ""),
+                            "in",
+                            false
+                        )
                         vim.api.nvim_feedkeys(
                             t("<cmd>setlocal %smodified<cr>"):format(
                                 bufmodified and "" or "no"
-                            )
-                        , "in", false)
+                            ),
+                            "in",
+                            false
+                        )
                         if type(mapping) == "string" then
                             vim.api.nvim_input(mapping)
                         elseif type(mapping) == "function" then
