@@ -8,6 +8,12 @@ problem with this mappings is that whenever you type a `j`, neovim wait about
 because these are mapped. Only after that time the `j` will be inserted. Then
 you always get a delay when typing a `j`.
 
+An example where this has a big impact is e.g. telescope. Because the characters
+which are mapped aren't really inserted at first the whole filtering isn't
+instant.
+
+![better-escape-tele](https://github.com/max397574/better-escape.nvim/assets/81827001/390f115d-87cd-43d8-aadf-fffb12bd84c9)
+
 ## ✨Features
 
 - Write mappings in many modes without having a delay when typing
