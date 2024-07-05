@@ -1,12 +1,5 @@
 local M = {}
 local uv = vim.uv
-local function t(str)
-    if vim.keycode then
-        return vim.keycode(str)
-    else
-        return vim.api.nvim_replace_termcodes(str, true, true, true)
-    end
-end
 
 M.waiting = false
 
