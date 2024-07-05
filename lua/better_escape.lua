@@ -121,7 +121,7 @@ local function map_keys()
                         if type(mapping) == "string" then
                             vim.api.nvim_input(mapping)
                         elseif type(mapping) == "function" then
-                            mapping()
+                            vim.api.nvim_input(mapping() or "")
                         end
                     end, map_opts)
                 end
