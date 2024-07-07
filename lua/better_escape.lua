@@ -89,10 +89,13 @@ local function map_keys()
     for mode, keys in pairs(settings.mappings) do
         local map_opts = { expr = true }
         for key, subkeys in pairs(keys) do
-            vim.keymap.set(mode, key, function()
-                log_key(key)
-                return key
-            end, map_opts)
+            -- Ensure correct registration of bidirectional mappings (e.g., `kj` and `jk`). #67
+            if vim.fn.maparg(key, mode) == "" then
+                vim.keymap.set(mode, key, function()
+                    log_key(key)
+                    return key
+                end, map_opts)
+            end
             for subkey, mapping in pairs(subkeys) do
                 if mapping then
                     if not parent_keys[mode] then
