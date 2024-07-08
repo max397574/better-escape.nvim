@@ -88,47 +88,48 @@ local function map_keys()
     parent_keys = {}
     for mode, keys in pairs(settings.mappings) do
         local map_opts = { expr = true }
+        for key, _ in pairs(keys) do
+            vim.keymap.set(mode, key, function()
+                log_key(key)
+                return key
+            end, map_opts)
+        end
         for key, subkeys in pairs(keys) do
-            -- Ensure correct registration of bidirectional mappings (e.g., `kj` and `jk`). #67
-            if vim.fn.maparg(key, mode) == "" then
-                vim.keymap.set(mode, key, function()
-                    log_key(key)
-                    return key
-                end, map_opts)
-            end
             for subkey, mapping in pairs(subkeys) do
-                if mapping then
-                    if not parent_keys[mode] then
-                        parent_keys[mode] = {}
-                    end
-                    if not parent_keys[mode][subkey] then
-                        parent_keys[mode][subkey] = {}
-                    end
-                    parent_keys[mode][subkey][key] = true
-                    vim.keymap.set(mode, subkey, function()
-                        -- In case the subkey happens to also be a starting key
-                        if last_key == nil then
-                            log_key(subkey)
-                            return subkey
-                        end
-                        -- Make sure we are in the correct sequence
-                        if not parent_keys[mode][subkey][last_key] then
-                            log_key(key)
-                            return subkey
-                        end
-                        vim.api.nvim_input(undo_key[mode] or "")
-                        vim.api.nvim_input(
-                            ("<cmd>setlocal %smodified<cr>"):format(
-                                bufmodified and "" or "no"
-                            )
-                        )
-                        if type(mapping) == "string" then
-                            vim.api.nvim_input(mapping)
-                        elseif type(mapping) == "function" then
-                            vim.api.nvim_input(mapping() or "")
-                        end
-                    end, map_opts)
+                if not mapping then
+                    goto continue
                 end
+                if not parent_keys[mode] then
+                    parent_keys[mode] = {}
+                end
+                if not parent_keys[mode][subkey] then
+                    parent_keys[mode][subkey] = {}
+                end
+                parent_keys[mode][subkey][key] = true
+                vim.keymap.set(mode, subkey, function()
+                    -- In case the subkey happens to also be a starting key
+                    if last_key == nil then
+                        log_key(subkey)
+                        return subkey
+                    end
+                    -- Make sure we are in the correct sequence
+                    if not parent_keys[mode][subkey][last_key] then
+                        log_key(key)
+                        return subkey
+                    end
+                    vim.api.nvim_input(undo_key[mode] or "")
+                    vim.api.nvim_input(
+                        ("<cmd>setlocal %smodified<cr>"):format(
+                            bufmodified and "" or "no"
+                        )
+                    )
+                    if type(mapping) == "string" then
+                        vim.api.nvim_input(mapping)
+                    elseif type(mapping) == "function" then
+                        vim.api.nvim_input(mapping() or "")
+                    end
+                end, map_opts)
+                ::continue::
             end
         end
     end
