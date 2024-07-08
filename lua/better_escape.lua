@@ -113,6 +113,7 @@ local function map_keys()
                         end
                         -- Make sure we are in the correct sequence
                         if not parent_keys[mode][subkey][last_key] then
+                            log_key(key)
                             return subkey
                         end
                         vim.api.nvim_input(undo_key[mode] or "")
