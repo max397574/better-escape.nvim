@@ -1,0 +1,17 @@
+name: Release Please
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v3
+        with:
+          token: ${{ secrets.PAT }}
+          release-type: simple
+          package-name: better-escape.nvim
