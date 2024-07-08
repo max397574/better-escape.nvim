@@ -7,7 +7,9 @@ local settings = {
     timeout = vim.o.timeoutlen,
     mappings = {
         i = {
+        --  startkey[s]
             j = {
+            --  endkey[s]
                 k = "<Esc>",
                 j = "<Esc>",
             },
@@ -49,73 +51,74 @@ local function clear_mappings()
 end
 
 -- WIP: move this into recorder.lua ?
-local last_key = nil
+local recorded_key = nil -- When a startkey is pressed, `recorded_key` is set to it (e.g. if jk is a mapping, when 'j' is pressed, `recorded_key` is set to 'j')
 local bufmodified = false
-local sequence_timer = uv.new_timer()
-local recorded_key = false
-local function log_key(key)
+local timeout_timer = uv.new_timer()
+local has_recorded = false -- See `vim.on_key` below
+local function record_key(key)
+    timeout_timer:stop()
     bufmodified = vim.bo.modified
-    last_key = key
-    recorded_key = true
-    sequence_timer:stop()
+    recorded_key = key
+    has_recorded = true 
     M.waiting = true
-    sequence_timer:start(settings.timeout, 0, function()
+    timeout_timer:start(settings.timeout, 0, function()
         M.waiting = false
-        if last_key == key then
-            last_key = nil
-        end
+        recorded_key = nil
     end)
 end
 
 vim.on_key(function()
-    if recorded_key then
-        recorded_key = false
+    if has_recorded == false then
+        -- If the user presses a key that doesn't get recorded, remove the previously recorded key.
+        recorded_key = nil
         return
     end
-    last_key = nil
+    has_recorded = false
 end)
 
--- list of modes that press <backspace> when escaping
+-- List of keys that undo the effect of pressing startkey
 local undo_key = {
     i = "<bs>",
     c = "<bs>",
     t = "<bs>",
-    v = "",
-    s = "",
 }
-local parent_keys = {}
+
+local sequences = {
+    -- Stores a sequence with this layout: mode[s] = { endkey[s] = { startkey[s] } } 
+}
 local function map_keys()
-    parent_keys = {}
-    for mode, keys in pairs(settings.mappings) do
+    sequences = {}
+    for mode, startkeys in pairs(settings.mappings) do
         local map_opts = { expr = true }
-        for key, _ in pairs(keys) do
-            vim.keymap.set(mode, key, function()
-                log_key(key)
-                return key
+        for startkey, _ in pairs(startkeys) do
+            vim.keymap.set(mode, startkey, function()
+                record_key(startkey)
+                return startkey
             end, map_opts)
         end
-        for key, subkeys in pairs(keys) do
-            for subkey, mapping in pairs(subkeys) do
+        for startkey, endkeys in pairs(startkeys) do
+            for endkey, mapping in pairs(endkeys) do
                 if not mapping then
                     goto continue
                 end
-                if not parent_keys[mode] then
-                    parent_keys[mode] = {}
+                if not sequences[mode] then
+                    sequences[mode] = {}
                 end
-                if not parent_keys[mode][subkey] then
-                    parent_keys[mode][subkey] = {}
+                if not sequences[mode][endkey] then
+                    sequences[mode][endkey] = {}
                 end
-                parent_keys[mode][subkey][key] = true
-                vim.keymap.set(mode, subkey, function()
-                    -- In case the subkey happens to also be a starting key
-                    if last_key == nil then
-                        log_key(subkey)
-                        return subkey
+                sequences[mode][endkey][startkey] = true
+                vim.keymap.set(mode, endkey, function()
+                    -- If a startkey wasn't recorded, record endkey because it might be a startkey for another sequence.
+                    -- TODO: Explicitly, check if it's a starting key. I don't think that's necessary right now.
+                    if recorded_key == nil then
+                        record_key(endkey)
+                        return endkey
                     end
-                    -- Make sure we are in the correct sequence
-                    if not parent_keys[mode][subkey][last_key] then
-                        log_key(subkey)
-                        return subkey
+                    -- If a key was recorded, but it isn't the startkey for endkey, record endkey(endkey might be a startkey for another sequence)
+                    if not sequences[mode][endkey][recorded_key] then
+                        record_key(endkey)
+                        return endkey
                     end
                     vim.api.nvim_input(undo_key[mode] or "")
                     vim.api.nvim_input(
