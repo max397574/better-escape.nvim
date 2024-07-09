@@ -92,14 +92,14 @@ local function map_keys()
     sequences = {}
     for mode, first_keys in pairs(settings.mappings) do
         local map_opts = { expr = true }
-        for first_key, _ in pairs(startkeys) do
+        for first_key, _ in pairs(first_keys) do
             vim.keymap.set(mode, first_key, function()
                 record_key(first_key)
                 return first_key
             end, map_opts)
         end
-        for first_key, second_keys in pairs(startkeys) do
-            for second_key, mapping in pairs(endkeys) do
+        for first_key, second_keys in pairs(first_keys) do
+            for second_key, mapping in pairs(second_keys) do
                 if not mapping then
                     goto continue
                 end
@@ -111,13 +111,13 @@ local function map_keys()
                 end
                 sequences[mode][second_key][first_key] = true
                 vim.keymap.set(mode, second_key, function()
-                    -- If a first_key wasn't recorded, record second_key because it might be a startkey for another sequence.
+                    -- If a first_key wasn't recorded, record second_key because it might be a first_key for another sequence.
                     -- TODO: Explicitly, check if it's a starting key. I don't think that's necessary right now.
                     if recorded_key == nil then
                         record_key(second_key)
                         return second_key
                     end
-                    -- If a key was recorded, but it isn't the first_key for second_key, record endkey(endkey might be a startkey for another sequence)
+                    -- If a key was recorded, but it isn't the first_key for second_key, record second_key(second_key might be a first_key for another sequence)
                     if not sequences[mode][second_key][recorded_key] then
                         record_key(second_key)
                         return second_key
