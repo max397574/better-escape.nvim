@@ -87,7 +87,6 @@ local undo_key = {
     t = "<bs>",
 }
 
--- Stores a sequence with this layout: mode[s] = { second_key[s] = { first_key[s] } } 
 local function map_keys()
     for mode, first_keys in pairs(settings.mappings) do
         local map_opts = { expr = true }
