@@ -7,9 +7,9 @@ local settings = {
     timeout = vim.o.timeoutlen,
     mappings = {
         i = {
-        --  startkey[s]
+        --  first_key[s]
             j = {
-            --  endkey[s]
+            --  second_key[s]
                 k = "<Esc>",
                 j = "<Esc>",
             },
@@ -51,7 +51,7 @@ local function clear_mappings()
 end
 
 -- WIP: move this into recorder.lua ?
-local recorded_key = nil -- When a startkey is pressed, `recorded_key` is set to it (e.g. if jk is a mapping, when 'j' is pressed, `recorded_key` is set to 'j')
+local recorded_key = nil -- When a first_key is pressed, `recorded_key` is set to it (e.g. if jk is a mapping, when 'j' is pressed, `recorded_key` is set to 'j')
 local bufmodified = false
 local timeout_timer = uv.new_timer()
 local has_recorded = false -- See `vim.on_key` below
@@ -76,7 +76,7 @@ vim.on_key(function()
     has_recorded = false
 end)
 
--- List of keys that undo the effect of pressing startkey
+-- List of keys that undo the effect of pressing first_key
 local undo_key = {
     i = "<bs>",
     c = "<bs>",
@@ -84,41 +84,41 @@ local undo_key = {
 }
 
 local sequences = {
-    -- Stores a sequence with this layout: mode[s] = { endkey[s] = { startkey[s] } } 
+    -- Stores a sequence with this layout: mode[s] = { second_key[s] = { first_key[s] } } 
 }
 local function map_keys()
     sequences = {}
-    for mode, startkeys in pairs(settings.mappings) do
+    for mode, first_keys in pairs(settings.mappings) do
         local map_opts = { expr = true }
-        for startkey, _ in pairs(startkeys) do
-            vim.keymap.set(mode, startkey, function()
-                record_key(startkey)
-                return startkey
+        for first_key, _ in pairs(startkeys) do
+            vim.keymap.set(mode, first_key, function()
+                record_key(first_key)
+                return first_key
             end, map_opts)
         end
-        for startkey, endkeys in pairs(startkeys) do
-            for endkey, mapping in pairs(endkeys) do
+        for first_key, second_keys in pairs(startkeys) do
+            for second_key, mapping in pairs(endkeys) do
                 if not mapping then
                     goto continue
                 end
                 if not sequences[mode] then
                     sequences[mode] = {}
                 end
-                if not sequences[mode][endkey] then
-                    sequences[mode][endkey] = {}
+                if not sequences[mode][second_key] then
+                    sequences[mode][second_key] = {}
                 end
-                sequences[mode][endkey][startkey] = true
-                vim.keymap.set(mode, endkey, function()
-                    -- If a startkey wasn't recorded, record endkey because it might be a startkey for another sequence.
+                sequences[mode][second_key][first_key] = true
+                vim.keymap.set(mode, second_key, function()
+                    -- If a first_key wasn't recorded, record second_key because it might be a startkey for another sequence.
                     -- TODO: Explicitly, check if it's a starting key. I don't think that's necessary right now.
                     if recorded_key == nil then
-                        record_key(endkey)
-                        return endkey
+                        record_key(second_key)
+                        return second_key
                     end
-                    -- If a key was recorded, but it isn't the startkey for endkey, record endkey(endkey might be a startkey for another sequence)
-                    if not sequences[mode][endkey][recorded_key] then
-                        record_key(endkey)
-                        return endkey
+                    -- If a key was recorded, but it isn't the first_key for second_key, record endkey(endkey might be a startkey for another sequence)
+                    if not sequences[mode][second_key][recorded_key] then
+                        record_key(second_key)
+                        return second_key
                     end
                     vim.api.nvim_input(undo_key[mode] or "")
                     vim.api.nvim_input(
