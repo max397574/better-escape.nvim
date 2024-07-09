@@ -1,15 +1,16 @@
 local M = {}
-local uv = vim.uv
+local uv = vim.uv or vim.loop
 
 M.waiting = false
 
 local settings = {
     timeout = vim.o.timeoutlen,
+    default_mappings = true,
     mappings = {
         i = {
-        --  first_key[s]
+            --  first_key[s]
             j = {
-            --  second_key[s]
+                --  second_key[s]
                 k = "<Esc>",
                 j = "<Esc>",
             },
@@ -51,9 +52,9 @@ local function unmap_keys()
 end
 
 -- WIP: move this into recorder.lua ?
--- When a first_key is pressed, `recorded_key` is set to it 
+-- When a first_key is pressed, `recorded_key` is set to it
 -- (e.g. if jk is a mapping, when 'j' is pressed, `recorded_key` is set to 'j')
-local recorded_key = nil 
+local recorded_key = nil
 local bufmodified = nil
 local timeout_timer = uv.new_timer()
 local has_recorded = false -- See `vim.on_key` below
@@ -63,7 +64,7 @@ local function record_key(key)
     end
     bufmodified = vim.bo.modified
     recorded_key = key
-    has_recorded = true 
+    has_recorded = true
     M.waiting = true
     timeout_timer:start(settings.timeout, 0, function()
         M.waiting = false
@@ -96,7 +97,7 @@ local function map_keys()
                 return first_key
             end, map_opts)
         end
-        for first_key, second_keys in pairs(first_keys) do
+        for _, second_keys in pairs(first_keys) do
             for second_key, mapping in pairs(second_keys) do
                 if not mapping then
                     goto continue
@@ -110,7 +111,12 @@ local function map_keys()
                     end
                     -- If a key was recorded, but it isn't the first_key for second_key, record second_key(second_key might be a first_key for another sequence)
                     -- Or if the recorded_key was just a second_key
-                    if not (first_keys[recorded_key] and first_keys[recorded_key][second_key]) then
+                    if
+                        not (
+                            first_keys[recorded_key]
+                            and first_keys[recorded_key][second_key]
+                        )
+                    then
                         record_key(second_key)
                         return second_key
                     end
@@ -134,6 +140,9 @@ end
 
 function M.setup(update)
     unmap_keys()
+    if update and update.default_mappings == false then
+        settings.mappings = {}
+    end
     settings = vim.tbl_deep_extend("force", settings, update or {})
     if settings.keys or settings.clear_empty_lines then
         vim.notify(

@@ -45,9 +45,10 @@ The biggest change was that the `mapping` config option was removed. Check the
 default configuration below to see the new structure.
 
 This also deprecated the `clear_empty_lines` setting. You can replicate this
-behavior with a function like this:
+behavior by setting a mapping to a function like this:
 
 ```lua
+-- `k` would be the second key of a mapping
 k = function()
     vim.api.nvim_input("<esc>")
     local current_line = vim.api.nvim_get_current_line()
@@ -81,7 +82,9 @@ i = {
 }
 ```
 
+### Disable mappings
 To disable keys set them to `false` in the configuration.
+You can also disable all default mappings by setting the `default_mappings` option to false.
 
 <details>
 <summary>Default Config</summary>
@@ -90,6 +93,7 @@ To disable keys set them to `false` in the configuration.
 -- lua, default settings
 require("better_escape").setup {
     timeout = vim.o.timeoutlen,
+    default_mappings = true,
     mappings = {
         i = {
             j = {
