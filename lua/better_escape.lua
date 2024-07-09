@@ -85,9 +85,8 @@ local undo_key = {
     t = "<bs>",
 }
 
-local sequences = {
-    -- Stores a sequence with this layout: mode[s] = { second_key[s] = { first_key[s] } } 
-}
+-- Stores a sequence with this layout: mode[s] = { second_key[s] = { first_key[s] } } 
+local sequences = {}
 local function map_keys()
     sequences = {}
     for mode, first_keys in pairs(settings.mappings) do
