@@ -110,7 +110,7 @@ local function map_keys()
                     end
                     -- If a key was recorded, but it isn't the first_key for second_key, record second_key(second_key might be a first_key for another sequence)
                     -- Or if the recorded_key was just a second_key
-                    if not first_keys[recorded_key] or not first_keys[recorded_key][second_key] then
+                    if not (first_keys[recorded_key] and first_keys[recorded_key][second_key]) then
                         record_key(second_key)
                         return second_key
                     end
