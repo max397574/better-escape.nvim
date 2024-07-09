@@ -51,7 +51,9 @@ local function clear_mappings()
 end
 
 -- WIP: move this into recorder.lua ?
-local recorded_key = nil -- When a first_key is pressed, `recorded_key` is set to it (e.g. if jk is a mapping, when 'j' is pressed, `recorded_key` is set to 'j')
+-- When a first_key is pressed, `recorded_key` is set to it 
+-- (e.g. if jk is a mapping, when 'j' is pressed, `recorded_key` is set to 'j')
+local recorded_key = nil 
 local bufmodified = false
 local timeout_timer = uv.new_timer()
 local has_recorded = false -- See `vim.on_key` below
