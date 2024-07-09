@@ -39,12 +39,12 @@ local settings = {
     },
 }
 
-local function clear_mappings()
+local function unmap_keys()
     for mode, keys in pairs(settings.mappings) do
         for key, subkeys in pairs(keys) do
-            vim.keymap.del(mode, key)
+            pcall(vim.keymap.del, mode, key)
             for subkey, _ in pairs(subkeys) do
-                vim.keymap.del(mode, subkey)
+                pcall(vim.keymap.del, mode, subkey)
             end
         end
     end
@@ -142,6 +142,7 @@ local function map_keys()
 end
 
 function M.setup(update)
+    unmap_keys()
     settings = vim.tbl_deep_extend("force", settings, update or {})
     if settings.keys or settings.clear_empty_lines then
         vim.notify(
@@ -165,7 +166,6 @@ function M.setup(update)
                 settings.keys
         end
     end
-    pcall(clear_mappings)
     map_keys()
 end
 
