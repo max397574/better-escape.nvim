@@ -88,9 +88,7 @@ local undo_key = {
 }
 
 -- Stores a sequence with this layout: mode[s] = { second_key[s] = { first_key[s] } } 
-local sequences = {}
 local function map_keys()
-    sequences = {}
     for mode, first_keys in pairs(settings.mappings) do
         local map_opts = { expr = true }
         for first_key, _ in pairs(first_keys) do
@@ -104,13 +102,6 @@ local function map_keys()
                 if not mapping then
                     goto continue
                 end
-                if not sequences[mode] then
-                    sequences[mode] = {}
-                end
-                if not sequences[mode][second_key] then
-                    sequences[mode][second_key] = {}
-                end
-                sequences[mode][second_key][first_key] = true
                 vim.keymap.set(mode, second_key, function()
                     -- If a first_key wasn't recorded, record second_key because it might be a first_key for another sequence.
                     -- TODO: Explicitly, check if it's a starting key. I don't think that's necessary right now.
@@ -119,7 +110,8 @@ local function map_keys()
                         return second_key
                     end
                     -- If a key was recorded, but it isn't the first_key for second_key, record second_key(second_key might be a first_key for another sequence)
-                    if not sequences[mode][second_key][recorded_key] then
+                    -- Or if the recorded_key was just a second_key
+                    if not first_keys[recorded_key] or not first_keys[recorded_key][second_key] then
                         record_key(second_key)
                         return second_key
                     end
