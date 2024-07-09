@@ -54,7 +54,7 @@ end
 -- When a first_key is pressed, `recorded_key` is set to it 
 -- (e.g. if jk is a mapping, when 'j' is pressed, `recorded_key` is set to 'j')
 local recorded_key = nil 
-local bufmodified = false
+local bufmodified = nil
 local timeout_timer = uv.new_timer()
 local has_recorded = false -- See `vim.on_key` below
 local function record_key(key)
