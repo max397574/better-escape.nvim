@@ -58,7 +58,9 @@ local bufmodified = false
 local timeout_timer = uv.new_timer()
 local has_recorded = false -- See `vim.on_key` below
 local function record_key(key)
-    timeout_timer:stop()
+    if timeout_timer:is_active() then
+        timeout_timer:stop()
+    end
     bufmodified = vim.bo.modified
     recorded_key = key
     has_recorded = true 
