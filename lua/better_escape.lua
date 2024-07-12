@@ -72,7 +72,7 @@ local function record_key(key)
     end)
 end
 
-vim.on_key(function(mapping, typed)
+vim.on_key(function(_, typed)
     if typed == "" then
         return
     end
