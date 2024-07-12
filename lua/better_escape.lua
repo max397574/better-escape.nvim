@@ -120,14 +120,32 @@ local function map_keys()
                         record_key(second_key)
                         return second_key
                     end
-                    vim.api.nvim_input(undo_key[mode] or "")
+                    vim.api.nvim_feedkeys(
+                        vim.api.nvim_replace_termcodes(
+                            undo_key[mode] or "",
+                            true,
+                            false,
+                            true
+                        ),
+                        "n",
+                        false
+                    )
                     vim.api.nvim_input(
                         ("<cmd>setlocal %smodified<cr>"):format(
                             bufmodified and "" or "no"
                         )
                     )
                     if type(mapping) == "string" then
-                        vim.api.nvim_input(mapping)
+                        vim.api.nvim_feedkeys(
+                            vim.api.nvim_replace_termcodes(
+                                mapping,
+                                true,
+                                false,
+                                true
+                            ),
+                            "n",
+                            false
+                        )
                     elseif type(mapping) == "function" then
                         vim.api.nvim_input(mapping() or "")
                     end
