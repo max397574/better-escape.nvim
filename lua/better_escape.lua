@@ -147,7 +147,15 @@ local function map_keys()
                             false
                         )
                     elseif type(mapping) == "function" then
-                        vim.api.nvim_input(mapping() or "")
+                        vim.api.nvim_feedkeys(
+                            vim.api.nvim_replace_termcodes(
+                                mapping() or "",
+                                true,
+                                false,
+                                true
+                            ),
+                            "n",
+                            false)
                     end
                 end, map_opts)
                 ::continue::
