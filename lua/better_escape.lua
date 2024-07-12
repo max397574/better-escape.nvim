@@ -72,7 +72,10 @@ local function record_key(key)
     end)
 end
 
-vim.on_key(function()
+vim.on_key(function(_, typed)
+    if typed == "" then
+        return
+    end
     if has_recorded == false then
         -- If the user presses a key that doesn't get recorded, remove the previously recorded key.
         recorded_key = nil
