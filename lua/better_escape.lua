@@ -142,7 +142,6 @@ local function map_keys()
 end
 
 function M.setup(update)
-    unmap_keys()
     if update and update.default_mappings == false then
         settings.mappings = {}
     end
@@ -169,6 +168,7 @@ function M.setup(update)
                 settings.keys
         end
     end
+    unmap_keys()
     map_keys()
 end
 
