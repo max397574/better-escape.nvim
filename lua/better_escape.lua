@@ -1,11 +1,5 @@
 local M = {}
 local uv = vim.uv or vim.loop
-local nvim_version = vim.version().minor
-local has_v0_10 = nvim_version >= 10
-local t = vim.keycode
-    or function(keys)
-        return vim.api.nvim_replace_termcodes(keys, true, true, true)
-    end
 
 M.waiting = false
 
@@ -63,17 +57,14 @@ end
 local recorded_key = nil
 local bufmodified = nil
 local timeout_timer = uv.new_timer()
-local has_recorded = 0 -- This variable is how many keys are considered recorded.
+local has_recorded = false -- See `vim.on_key` below
 local function record_key(key)
     if timeout_timer:is_active() then
         timeout_timer:stop()
     end
     bufmodified = vim.bo.modified
     recorded_key = key
-    -- Consider 2 keys recorded for < v0.10 versions because `vim.on_key` is called 2 times--once with the second parameter as "<first_key>",
-    -- and another time with the 2nd parameter as ""(nothing)--It's called a 2nd time because better-escape uses `feedkeys` to press the key after the `first_key`'s mapping is evaluated.
-    -- > v0.10 versions don't need a second record because they avoid handling keys that come from `feedkeys`.
-    has_recorded = has_v0_10 and 1 or 2
+    has_recorded = true
     M.waiting = true
     timeout_timer:start(settings.timeout, 0, function()
         M.waiting = false
@@ -85,12 +76,12 @@ vim.on_key(function(_, typed)
     if typed == "" then
         return
     end
-    if has_recorded == 0 then
+    if has_recorded == false then
         -- If the user presses a key that doesn't get recorded, remove the previously recorded key.
         recorded_key = nil
         return
     end
-    has_recorded = has_recorded - 1
+    has_recorded = false
 end)
 
 -- List of keys that undo the effect of pressing first_key
@@ -102,12 +93,12 @@ local undo_key = {
 
 local function map_keys()
     for mode, first_keys in pairs(settings.mappings) do
+        local map_opts = { expr = true }
         for first_key, _ in pairs(first_keys) do
             vim.keymap.set(mode, first_key, function()
                 record_key(first_key)
-                -- Use feedkeys instead of expr-mappings to avoid expr-mapping's limitations--such as not being able to modify the buffer because of `textlock`. See `:h :map-expression`
-                vim.api.nvim_feedkeys(t(first_key), "in", false)
-            end)
+                return first_key
+            end, map_opts)
         end
         for _, second_keys in pairs(first_keys) do
             for second_key, mapping in pairs(second_keys) do
@@ -119,8 +110,7 @@ local function map_keys()
                     -- TODO: Explicitly, check if it's a starting key. I don't think that's necessary right now.
                     if recorded_key == nil then
                         record_key(second_key)
-                        vim.api.nvim_feedkeys(t(second_key), "in", false)
-                        return
+                        return second_key
                     end
                     -- If a key was recorded, but it isn't the first_key for second_key, record second_key(second_key might be a first_key for another sequence)
                     -- Or if the recorded_key was just a second_key
@@ -131,8 +121,7 @@ local function map_keys()
                         )
                     then
                         record_key(second_key)
-                        vim.api.nvim_feedkeys(t(second_key), "in", false)
-                        return
+                        return second_key
                     end
                     vim.api.nvim_feedkeys(
                         vim.api.nvim_replace_termcodes(
@@ -171,7 +160,7 @@ local function map_keys()
                             "n",
                             false)
                     end
-                end)
+                end, map_opts)
                 ::continue::
             end
         end
