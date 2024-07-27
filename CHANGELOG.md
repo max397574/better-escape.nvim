@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.2](https://github.com/max397574/better-escape.nvim/compare/v2.3.1...v2.3.2) (2024-07-27)
+
+
+### Bug Fixes
+
+* macro regression ([25a1400](https://github.com/max397574/better-escape.nvim/commit/25a14001e587ce3068b3b2204c330fdd5a09b877))
+
 ## [2.3.1](https://github.com/max397574/better-escape.nvim/compare/v2.3.0...v2.3.1) (2024-07-20)
 
 
