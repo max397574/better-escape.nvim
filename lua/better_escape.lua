@@ -1,5 +1,8 @@
 local M = {}
 local uv = vim.uv or vim.loop
+local t = function(str)
+    return vim.api.nvim_replace_termcodes(str, true, true, true)
+end
 
 M.waiting = false
 
@@ -123,43 +126,22 @@ local function map_keys()
                         record_key(second_key)
                         return second_key
                     end
-                    vim.api.nvim_feedkeys(
-                        vim.api.nvim_replace_termcodes(
-                            undo_key[mode] or "",
-                            true,
-                            false,
-                            true
-                        ),
-                        "n",
-                        false
-                    )
-                    vim.api.nvim_input(
-                        ("<cmd>setlocal %smodified<cr>"):format(
-                            bufmodified and "" or "no"
+                    local keys = ""
+                    keys = keys
+                        .. t(
+                            (undo_key[mode] or "")
+                                .. (
+                                    ("<cmd>setlocal %smodified<cr>"):format(
+                                        bufmodified and "" or "no"
+                                    )
+                                )
                         )
-                    )
                     if type(mapping) == "string" then
-                        vim.api.nvim_feedkeys(
-                            vim.api.nvim_replace_termcodes(
-                                mapping,
-                                true,
-                                false,
-                                true
-                            ),
-                            "n",
-                            false
-                        )
+                        keys = keys .. t(mapping)
                     elseif type(mapping) == "function" then
-                        vim.api.nvim_feedkeys(
-                            vim.api.nvim_replace_termcodes(
-                                mapping() or "",
-                                true,
-                                false,
-                                true
-                            ),
-                            "n",
-                            false)
+                        keys = keys .. t(mapping() or "")
                     end
+                    vim.api.nvim_feedkeys(keys, "in", false)
                 end, map_opts)
                 ::continue::
             end
