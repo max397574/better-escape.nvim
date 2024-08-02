@@ -26,8 +26,7 @@ local settings = {
         },
         t = {
             j = {
-                k = "<Esc>",
-                j = "<Esc>",
+                k = "<C-\\><C-n>",
             },
         },
         v = {
