@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.3](https://github.com/max397574/better-escape.nvim/compare/v2.3.2...v2.3.3) (2024-08-31)
+
+
+### Bug Fixes
+
+* terminal mode defaults ([6996b2d](https://github.com/max397574/better-escape.nvim/commit/6996b2d821d61358786a5dfa21dd595e643f4af7))
+
 ## [2.3.2](https://github.com/max397574/better-escape.nvim/compare/v2.3.1...v2.3.2) (2024-07-27)
 
 
