@@ -20,8 +20,8 @@ local settings = {
         },
         c = {
             j = {
-                k = "<Esc>",
-                j = "<Esc>",
+                k = "<C-c>",
+                j = "<C-c>",
             },
         },
         t = {
