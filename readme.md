@@ -61,7 +61,7 @@ end
 ```
 ## Default configuration
 
-To disable all default mappings set the `default_mappings` option to false.
+To disable all default mappings set the `default_mappings` option to false.   
 To disable specific mappings set their key to `false` in the configuration. There's an example in the Customization section.
 
 ```lua
