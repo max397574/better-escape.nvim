@@ -59,42 +59,18 @@ k = function()
     end
 end
 ```
+## Default configuration
 
-## ⚙️Customization
-
-Call the setup function with your options as arguments.
-
-After the rewrite you can also use any function. So you could for example map
-`<space><tab>` to jump with luasnip like this:
-
-```lua
-i = {
-    [" "] = {
-        ["<tab>"] = function()
-            -- Defer execution to avoid side-effects
-            vim.defer_fn(function()
-                -- set undo point
-                vim.o.ul = vim.o.ul
-                require("luasnip").expand_or_jump()
-            end, 1)
-        end
-    }
-}
-```
-
-### Disable mappings
-To disable keys set them to `false` in the configuration.
-You can also disable all default mappings by setting the `default_mappings` option to false.
-
-<details>
-<summary>Default Config</summary>
+To disable all default mappings set the `default_mappings` option to false.
+To disable specific mappings set their key to `false` in the configuration. There's an example in the Customization section.
 
 ```lua
 -- lua, default settings
 require("better_escape").setup {
-    timeout = vim.o.timeoutlen,
-    default_mappings = true,
+    timeout = vim.o.timeoutlen, -- after `timeout` passes, you can press the escape key and the plugin will ignore it
+    default_mappings = true, -- setting this to false removes all the default mappings
     mappings = {
+        -- i for insert
         i = {
             j = {
                 -- These can all also be functions
@@ -104,8 +80,8 @@ require("better_escape").setup {
         },
         c = {
             j = {
-                k = "<Esc>",
-                j = "<Esc>",
+                k = "<C-c>",
+                j = "<C-c>",
             },
         },
         t = {
@@ -126,8 +102,63 @@ require("better_escape").setup {
     },
 }
 ```
+## ⚙️Customization
 
-</details>
+Call the setup function with your options as arguments:
+```lua
+require("better_escape").setup {
+    timeout = vim.o.timeoutlen, -- after `timeout` passes, you can press the escape key and the plugin will ignore it
+    default_mappings = true, -- setting this to false removes all the default mappings
+    mappings = {
+        -- mode = {
+        --     firstkey = {
+        --        secondkey = "Escape key", -- make a key press "Escape key"
+        --        secondkey = false, -- disable a key
+        --     },
+        -- }
+    }
+}
+```
+
+Here how you can configure Insert-mode:
+```lua
+mappings = {
+    -- i for insert, other modes are the first letter too
+    i = {
+        -- map kj to exit insert mode
+        k = {
+            j = "<Esc>",
+        },
+        -- map jk and jj  to exit insert mode
+        j = {
+            k = "<Esc>",
+            j = "<Esc>",
+        },
+        -- disable jj
+        j = {
+            j = false,
+        },
+    }
+}
+```
+
+You can also use a function instead of keys. So you could for example map
+`<space><tab>` to jump with luasnip like this:
+
+```lua
+i = {
+    [" "] = {
+        ["<tab>"] = function()
+            -- Defer execution to avoid side-effects
+            vim.defer_fn(function()
+                -- set undo point
+                vim.o.ul = vim.o.ul
+                require("luasnip").expand_or_jump()
+            end, 1)
+        end
+    }
+}
+```
 
 ## API
 
