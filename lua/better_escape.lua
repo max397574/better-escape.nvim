@@ -187,6 +187,16 @@ local function map_keys()
     end
 end
 
+-- TODO: update this
+local function unmap_keys()
+    for mode, keys in pairs(mapped_keys) do
+        for key, _ in pairs(mapped_keys) do
+            pcall(vim.keymap.del, key)
+        end
+    end
+    mapped_keys = {}
+end
+
 function M.setup(update)
     if update and update.default_mappings == false then
         settings.mappings = {}
@@ -214,6 +224,7 @@ function M.setup(update)
                 settings.keys
         end
     end
+    unmap_keys()
     map_keys()
 end
 
