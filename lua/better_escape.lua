@@ -42,17 +42,6 @@ local settings = {
     },
 }
 
-local function unmap_keys()
-    for mode, keys in pairs(settings.mappings) do
-        for key, subkeys in pairs(keys) do
-            pcall(vim.keymap.del, mode, key)
-            for subkey, _ in pairs(subkeys) do
-                pcall(vim.keymap.del, mode, subkey)
-            end
-        end
-    end
-end
-
 -- WIP: move this into recorder.lua ?
 -- When a first_key is pressed, `recorded_key` is set to it
 -- (e.g. if jk is a mapping, when 'j' is pressed, `recorded_key` is set to 'j')
@@ -118,15 +107,13 @@ local function map_final(mode, key, parents, action)
         return
     end
     vim.keymap.set(mode, key, function()
-        -- If a first_key wasn't recorded, record second_key because it might be a first_key for another sequence.
-        -- TODO: Explicitly, check if it's a starting key. I don't think that's necessary right now.
         if recorded_keys == "" then
             record_key(key)
             return key
         end
         local action = nil
         for _, v in ipairs(parent_tree[mode][key]) do
-            if v[1] == recorded_keys:sub(-#v[1]) then
+            if v[1] == recorded_keys:sub(- #v[1]) then
                 action = v[2]
                 break
             end
@@ -157,24 +144,42 @@ local function map_final(mode, key, parents, action)
     end, { expr = true })
 end
 
+-- has map with all mapped keys
+local mapped_keys = {}
+
+local function map_record(mode, key)
+    if not mapped_keys[mode] then
+        mapped_keys[mode] = {}
+    end
+    mapped_keys[mode][key] = true
+    vim.keymap.set(mode, key, function()
+        record_key(key)
+        return key
+    end, { expr = true })
+end
+
 local function map_keys()
     for mode, keys_1 in pairs(settings.mappings) do
         local function recursive_map(mode, keys, parents)
             for k, v in pairs(keys) do
+                -- add any extra keys to the parent tree
+                local sub_parents = parents .. (k:sub(1, #k - 1) or "")
+                for i = 1, #k - 1, 1 do
+                    local key = k:sub(i, i)
+                    map_record(mode, key)
+                end
+                k = k:sub(#k, #k)
                 if type(v) ~= "table" then
-                    map_final(mode, k, parents, v)
+                    map_final(mode, k, sub_parents, v)
                     goto continue
                 end
-                local sub_parents = parents .. k
+                sub_parents = sub_parents .. k
                 recursive_map(mode, v, sub_parents);
                 if parent_tree[mode][k] then
                     goto continue
                 end
-                vim.keymap.set(mode, k, function()
-                    record_key(k)
-                    return k
-                end, { expr = true })
-                
+                map_record(mode, k)
+
                 ::continue::
             end
         end
@@ -209,7 +214,6 @@ function M.setup(update)
                 settings.keys
         end
     end
-    unmap_keys()
     map_keys()
 end
 
