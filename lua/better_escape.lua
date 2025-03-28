@@ -43,8 +43,6 @@ local settings = {
 }
 
 -- WIP: move this into recorder.lua ?
--- When a first_key is pressed, `recorded_key` is set to it
--- (e.g. if jk is a mapping, when 'j' is pressed, `recorded_key` is set to 'j')
 local recorded_keys = ""
 local bufmodified = nil
 local timeout_timer = uv.new_timer()
@@ -68,7 +66,7 @@ vim.on_key(function(_, typed)
         return
     end
     if has_recorded == false then
-        -- If the user presses a key that doesn't get recorded, remove the previously recorded key.
+        -- If the user presses a key that doesn't get recorded, remove the previously recorded key sequence.
         recorded_keys = ""
         return
     end
@@ -81,10 +79,18 @@ local undo_key = {
     c = "<bs>",
     t = "<bs>",
 }
+-- hash map with all mapped keys
+local mapped_keys = {}
+-- A thin wrapper around vim.keymap.set to record every mapped key
+local function map(mode, keys, action, opts)
+    if not mapped_keys[mode] then
+        mapped_keys[mode] = {}
+    end
+    mapped_keys[mode][keys] = true
+    vim.keymap.set(mode, keys, action, opts)
+end
 
 local parent_tree = {}
-
-
 local function map_final(mode, key, parents, action)
     if not parent_tree[mode] then
         parent_tree[mode] = {}
@@ -92,109 +98,123 @@ local function map_final(mode, key, parents, action)
     if not parent_tree[mode][key] then
         parent_tree[mode][key] = {}
     end
-    -- sort the tree while inserting
-    -- prioritize longer sequences over shorter ones (jjk > jk)
-    for i, v in ipairs(parent_tree[mode][key]) do
-        if #parents > #v[1] then
-            table.insert(parent_tree[mode][key], i, { parents, action })
-            break
-        end
-    end
+    -- Handle the first sequence
     if #parent_tree[mode][key] == 0 then
+        -- We store the parents sequences and actions in an array because we need the parents to be sorted
+        -- By longest to shortest, because a longer sequence could contain a shorter sequence (jjk & jk)
+        -- Example:
+        -- parents = jk, jjk
+        -- recorded_keys = "anythingjjk"
+        -- if the plugin compares the end of recorded_keys to "jk" first,
+        -- it would use "jk"'s action since the recorded_keys end in "jk",
+        -- so it would miss that the recorded_keys actually end in the "jjk" sequence
         table.insert(parent_tree[mode][key], { parents, action })
-    else
-        -- don't map the key 2 times
-        return
-    end
-    vim.keymap.set(mode, key, function()
-        if recorded_keys == "" then
-            record_key(key)
-            return key
-        end
-        local action = nil
-        for _, v in ipairs(parent_tree[mode][key]) do
-            if v[1] == recorded_keys:sub(- #v[1]) then
-                action = v[2]
-                break
+        map(mode, key, function()
+            if recorded_keys == "" then
+                record_key(key)
+                return key
             end
-        end
-        if not action then
-            record_key(key)
-            return key
-        end
-        if action == "" then
-            return key
-        end
-        local keys = ""
-        keys = keys
-            .. t(
-                (undo_key[mode] or "")
-                .. (
-                    ("<cmd>setlocal %smodified<cr>"):format(
-                        bufmodified and "" or "no"
+            local action = nil
+            for _, v in ipairs(parent_tree[mode][key]) do
+                -- compare the end of recorded_keys to every parent sequence
+                if v[1] == recorded_keys:sub(- #v[1]) then
+                    action = v[2]
+                    break
+                end
+            end
+            -- no parent sequence was found
+            if not action then
+                record_key(key)
+                return key
+            end
+            if action == "" then
+                return key
+            end
+            local keys = ""
+            keys = keys
+                .. t(
+                    (undo_key[mode] or ""):rep(#parent_tree[mode][key][1])
+                    .. (
+                        ("<cmd>setlocal %smodified<cr>"):format(
+                            bufmodified and "" or "no"
+                        )
                     )
                 )
-            )
-        if type(action) == "string" then
-            keys = keys .. t(action)
-        elseif type(action) == "function" then
-            keys = keys .. t(action() or "")
+            if type(action) == "string" then
+                keys = keys .. t(action)
+            elseif type(action) == "function" then
+                keys = keys .. t(action() or "")
+            end
+            vim.api.nvim_feedkeys(keys, "in", false)
+        end, { expr = true })
+    end
+    -- Handle new sequences
+    -- sort the tree while inserting
+    for i, v in ipairs(parent_tree[mode][key]) do
+        -- prioritize longer sequences over shorter ones (jjk > jk)
+        if #parents >= #v[1] then
+            table.insert(parent_tree[mode][key], i, { parents, action })
+            return
         end
-        vim.api.nvim_feedkeys(keys, "in", false)
-    end, { expr = true })
+    end
+    -- the new parent sequence is smaller than all other parents
+    -- so add it at the last spot
+    table.insert(parent_tree[mode][key], { parents, action })
 end
 
--- has map with all mapped keys
-local mapped_keys = {}
-
-local function map_record(mode, key)
-    if not mapped_keys[mode] then
-        mapped_keys[mode] = {}
+local function map_parent(mode, key)
+    -- Don't overwrite a final mapping
+    if parent_tree[mode] and parent_tree[mode][key] then
+        return
     end
-    mapped_keys[mode][key] = true
-    vim.keymap.set(mode, key, function()
+    -- Don't map the same key 2 times
+    if mapped_keys[mode] and mapped_keys[mode][key] then
+        return
+    end
+    map(mode, key, function()
         record_key(key)
         return key
     end, { expr = true })
 end
 
 local function map_keys()
-    for mode, keys_1 in pairs(settings.mappings) do
+    for mode, first_keys in pairs(settings.mappings) do
         local function recursive_map(mode, keys, parents)
             for k, v in pairs(keys) do
-                -- add any extra keys to the parent tree
+                -- Handle multiple characters in a table
+                -- (e.g i = { jjk = "<Esc>" })
+                -- consider every key except the last as a parent ("jj" in the example above)
+                -- and map them
                 local sub_parents = parents .. (k:sub(1, #k - 1) or "")
                 for i = 1, #k - 1, 1 do
                     local key = k:sub(i, i)
-                    map_record(mode, key)
+                    map_parent(mode, key)
                 end
                 k = k:sub(#k, #k)
-                if type(v) ~= "table" then
-                    map_final(mode, k, sub_parents, v)
-                    goto continue
-                end
-                sub_parents = sub_parents .. k
-                recursive_map(mode, v, sub_parents);
-                if parent_tree[mode][k] then
-                    goto continue
-                end
-                map_record(mode, k)
 
-                ::continue::
+                if type(v) == "table" then
+                    -- Handle subkeys
+                    sub_parents = sub_parents .. k
+                    recursive_map(mode, v, sub_parents);
+                    map_parent(mode, k)
+                else
+                    -- No more subkeys, map the final key
+                    map_final(mode, k, sub_parents, v)
+                end
             end
         end
-        recursive_map(mode, keys_1, "")
+        recursive_map(mode, first_keys, "")
     end
 end
 
--- TODO: update this
 local function unmap_keys()
     for mode, keys in pairs(mapped_keys) do
-        for key, _ in pairs(mapped_keys) do
-            pcall(vim.keymap.del, key)
+        for key, _ in pairs(keys) do
+            pcall(vim.keymap.del, mode, key)
         end
     end
     mapped_keys = {}
+    parent_tree = {}
 end
 
 function M.setup(update)
