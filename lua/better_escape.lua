@@ -56,7 +56,7 @@ end
 -- WIP: move this into recorder.lua ?
 -- When a first_key is pressed, `recorded_key` is set to it
 -- (e.g. if jk is a mapping, when 'j' is pressed, `recorded_key` is set to 'j')
-local recorded_key = nil
+local recorded_keys = ""
 local bufmodified = nil
 local timeout_timer = uv.new_timer()
 local has_recorded = false -- See `vim.on_key` below
@@ -65,12 +65,12 @@ local function record_key(key)
         timeout_timer:stop()
     end
     bufmodified = vim.bo.modified
-    recorded_key = key
+    recorded_keys = recorded_keys .. key
     has_recorded = true
     M.waiting = true
     timeout_timer:start(settings.timeout, 0, function()
         M.waiting = false
-        recorded_key = nil
+        recorded_keys = ""
     end)
 end
 
@@ -80,7 +80,7 @@ vim.on_key(function(_, typed)
     end
     if has_recorded == false then
         -- If the user presses a key that doesn't get recorded, remove the previously recorded key.
-        recorded_key = nil
+        recorded_keys = ""
         return
     end
     has_recorded = false
@@ -93,58 +93,92 @@ local undo_key = {
     t = "<bs>",
 }
 
-local function map_keys()
-    for mode, first_keys in pairs(settings.mappings) do
-        local map_opts = { expr = true }
-        for first_key, _ in pairs(first_keys) do
-            vim.keymap.set(mode, first_key, function()
-                record_key(first_key)
-                return first_key
-            end, map_opts)
+local parent_tree = {}
+
+
+local function map_final(mode, key, parents, action)
+    if not parent_tree[mode] then
+        parent_tree[mode] = {}
+    end
+    if not parent_tree[mode][key] then
+        parent_tree[mode][key] = {}
+    end
+    -- sort the tree while inserting
+    -- prioritize longer sequences over shorter ones (jjk > jk)
+    for i, v in ipairs(parent_tree[mode][key]) do
+        if #parents > #v[1] then
+            table.insert(parent_tree[mode][key], i, { parents, action })
+            break
         end
-        for _, second_keys in pairs(first_keys) do
-            for second_key, mapping in pairs(second_keys) do
-                if not mapping then
+    end
+    if #parent_tree[mode][key] == 0 then
+        table.insert(parent_tree[mode][key], { parents, action })
+    else
+        -- don't map the key 2 times
+        return
+    end
+    vim.keymap.set(mode, key, function()
+        -- If a first_key wasn't recorded, record second_key because it might be a first_key for another sequence.
+        -- TODO: Explicitly, check if it's a starting key. I don't think that's necessary right now.
+        if recorded_keys == "" then
+            record_key(key)
+            return key
+        end
+        local action = nil
+        for _, v in ipairs(parent_tree[mode][key]) do
+            if v[1] == recorded_keys:sub(-#v[1]) then
+                action = v[2]
+                break
+            end
+        end
+        if not action then
+            record_key(key)
+            return key
+        end
+        if action == "" then
+            return key
+        end
+        local keys = ""
+        keys = keys
+            .. t(
+                (undo_key[mode] or "")
+                .. (
+                    ("<cmd>setlocal %smodified<cr>"):format(
+                        bufmodified and "" or "no"
+                    )
+                )
+            )
+        if type(action) == "string" then
+            keys = keys .. t(action)
+        elseif type(action) == "function" then
+            keys = keys .. t(action() or "")
+        end
+        vim.api.nvim_feedkeys(keys, "in", false)
+    end, { expr = true })
+end
+
+local function map_keys()
+    for mode, keys_1 in pairs(settings.mappings) do
+        local function recursive_map(mode, keys, parents)
+            for k, v in pairs(keys) do
+                if type(v) ~= "table" then
+                    map_final(mode, k, parents, v)
                     goto continue
                 end
-                vim.keymap.set(mode, second_key, function()
-                    -- If a first_key wasn't recorded, record second_key because it might be a first_key for another sequence.
-                    -- TODO: Explicitly, check if it's a starting key. I don't think that's necessary right now.
-                    if recorded_key == nil then
-                        record_key(second_key)
-                        return second_key
-                    end
-                    -- If a key was recorded, but it isn't the first_key for second_key, record second_key(second_key might be a first_key for another sequence)
-                    -- Or if the recorded_key was just a second_key
-                    if
-                        not (
-                            first_keys[recorded_key]
-                            and first_keys[recorded_key][second_key]
-                        )
-                    then
-                        record_key(second_key)
-                        return second_key
-                    end
-                    local keys = ""
-                    keys = keys
-                        .. t(
-                            (undo_key[mode] or "")
-                                .. (
-                                    ("<cmd>setlocal %smodified<cr>"):format(
-                                        bufmodified and "" or "no"
-                                    )
-                                )
-                        )
-                    if type(mapping) == "string" then
-                        keys = keys .. t(mapping)
-                    elseif type(mapping) == "function" then
-                        keys = keys .. t(mapping() or "")
-                    end
-                    vim.api.nvim_feedkeys(keys, "in", false)
-                end, map_opts)
+                local sub_parents = parents .. k
+                recursive_map(mode, v, sub_parents);
+                if parent_tree[mode][k] then
+                    goto continue
+                end
+                vim.keymap.set(mode, k, function()
+                    record_key(k)
+                    return k
+                end, { expr = true })
+                
                 ::continue::
             end
         end
+        recursive_map(mode, keys_1, "")
     end
 end
 
