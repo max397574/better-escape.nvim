@@ -48,7 +48,7 @@ This also deprecated the `clear_empty_lines` setting. You can replicate this
 behavior by setting a mapping to a function like this:
 
 ```lua
--- `k` would be the second key of a mapping
+-- `k` would be the end key of a mapping
 k = function()
     vim.api.nvim_input("<esc>")
     local current_line = vim.api.nvim_get_current_line()
@@ -112,8 +112,8 @@ require("better_escape").setup {
     mappings = {
         -- mode = {
         --     firstkey = {
-        --        secondkey = "Escape key", -- make a key press "Escape key"
-        --        secondkey = false, -- disable a key
+        --        endkey = "Escape key", -- make a key press "Escape key"
+        --        endkey = false, -- disable a key
         --     },
         -- }
     }
@@ -134,6 +134,19 @@ mappings = {
             k = "<Esc>",
             j = "<Esc>",
         },
+        -- you can repeat this table pattern forever
+        -- map jjk to do nothing
+        j = {
+            j = {
+                k = "",
+            },
+        },
+        -- you can also define mappings with this shorthand
+        -- same as the example above, maps jk and jj to escape insert mode
+        jk = "", 
+        jj = "", 
+        -- same as the example above, maps jjk to do nothing
+        jjk = "", 
         -- disable jj
         j = {
             j = false,
