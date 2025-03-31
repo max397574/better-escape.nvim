@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.4](https://github.com/max397574/better-escape.nvim/compare/v2.3.3...v2.3.4) (2025-03-31)
+
+
+### Bug Fixes
+
+* **cmd-mode:** use &lt;C-c&gt; because <Esc> is technically bugged ([11b86f1](https://github.com/max397574/better-escape.nvim/commit/11b86f19d9dc6d5b7ae8cc70604f8df1b836b13c))
+
 ## [2.3.3](https://github.com/max397574/better-escape.nvim/compare/v2.3.2...v2.3.3) (2024-08-31)
 
 
