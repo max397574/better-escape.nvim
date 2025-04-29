@@ -179,6 +179,28 @@ local function map_parent(mode, key)
     end, { expr = true })
 end
 
+local disabled_mappings = {}
+local function disable_keys()
+    for mode, first_keys in pairs(settings.mappings) do
+        disabled_mappings[mode] = {}
+        function parse_keys(mode, keys, parents)
+            for k, v in pairs(keys) do
+                local sub_parents = parents .. k
+                if type(v) == "table" then
+                    -- Handle subkeys
+                    parse_keys(mode, v, sub_parents)
+                else
+                    if v == false then
+                        disabled_mappings[mode][sub_parents] = true
+                    end
+                end
+            end
+        end
+
+        parse_keys(mode, first_keys, "")
+    end
+end
+
 local function map_keys()
     for mode, first_keys in pairs(settings.mappings) do
         local function recursive_map(mode, keys, parents)
@@ -197,11 +219,15 @@ local function map_keys()
                 if type(v) == "table" then
                     -- Handle subkeys
                     sub_parents = sub_parents .. k
-                    recursive_map(mode, v, sub_parents);
+                    recursive_map(mode, v, sub_parents)
                     map_parent(mode, k)
                 else
-                    -- No more subkeys, map the final key
-                    map_final(mode, k, sub_parents, v)
+                    if disabled_mappings[mode][sub_parents .. k] then
+                        keys[k] = nil
+                    else
+                        -- No more subkeys, map the final key
+                        map_final(mode, k, sub_parents, v)
+                    end
                 end
             end
         end
@@ -246,6 +272,7 @@ function M.setup(update)
                 settings.keys
         end
     end
+    disable_keys()
     unmap_keys()
     map_keys()
 end
