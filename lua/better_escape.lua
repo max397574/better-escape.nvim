@@ -133,7 +133,7 @@ local function map_final(mode, key, parents, action)
             local keys = ""
             keys = keys
                 .. t(
-                    (undo_key[mode] or ""):rep(#parent_tree[mode][key][1])
+                    (undo_key[mode] or ""):rep(#parents)
                     .. (
                         ("<cmd>setlocal %smodified<cr>"):format(
                             bufmodified and "" or "no"
