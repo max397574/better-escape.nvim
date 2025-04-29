@@ -209,12 +209,16 @@ local function map_keys()
                 -- (e.g i = { jjk = "<Esc>" })
                 -- consider every key except the last as a parent ("jj" in the example above)
                 -- and map them
-                local sub_parents = parents .. (k:sub(1, #k - 1) or "")
-                for i = 1, #k - 1, 1 do
-                    local key = k:sub(i, i)
-                    map_parent(mode, key)
+                local has_special = vim.keycode(k) ~= k
+                local sub_parents = parents
+                if not has_special then
+                    sub_parents = parents .. (k:sub(1, #k - 1) or "")
+                    for i = 1, #k - 1, 1 do
+                        local key = k:sub(i, i)
+                        map_parent(mode, key)
+                    end
+                    k = k:sub(#k, #k)
                 end
-                k = k:sub(#k, #k)
 
                 if type(v) == "table" then
                     -- Handle subkeys

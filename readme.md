@@ -147,6 +147,13 @@ mappings = {
         jj = "", 
         -- same as the example above, maps jjk to do nothing
         jjk = "", 
+        -- NOTE:  The shorthand doesn't work if you use special characters
+        ["jj<Tab>"] = "<Esc>", -- doesn't escape
+        -- Though you can use a mix of the shorthand and tables to use special characters:
+        jj = {
+            ["<Tab>"] = "<Esc>",
+        },
+        
         -- disable jj
         j = {
             j = false,
