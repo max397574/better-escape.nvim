@@ -115,9 +115,11 @@ local function map_final(mode, key, parents, action)
                 return key
             end
             local action = nil
+            local parent_length = 0
             for _, v in ipairs(parent_tree[mode][key]) do
                 -- compare the end of recorded_keys to every parent sequence
                 if v[1] == recorded_keys:sub(- #v[1]) then
+                    parent_length = #v[1]
                     action = v[2]
                     break
                 end
@@ -133,7 +135,7 @@ local function map_final(mode, key, parents, action)
             local keys = ""
             keys = keys
                 .. t(
-                    (undo_key[mode] or ""):rep(#parents)
+                    (undo_key[mode] or ""):rep(parent_length)
                     .. (
                         ("<cmd>setlocal %smodified<cr>"):format(
                             bufmodified and "" or "no"
