@@ -147,10 +147,15 @@ mappings = {
         jj = "", 
         -- same as the example above, maps jjk to do nothing
         jjk = "", 
-        -- NOTE:  The shorthand doesn't work if you use special characters
+        -- NOTE:  The shorthand doesn't work if you use special characters (<tab>, <c-x> <anything ..>)
         ["jj<Tab>"] = "<Esc>", -- doesn't escape
         -- Though you can use a mix of the shorthand and tables to use special characters:
         jj = {
+            ["<Tab>"] = "<Esc>",
+        },
+        -- NOTE: there's a bug where if a special character is not the final key in a mapping, then the plugin overdeletes characters
+        -- This is a limitation as the plugin can't tell if a special key needs to be deleted or not:
+        ["<Tab>"] = {
             ["<Tab>"] = "<Esc>",
         },
         
